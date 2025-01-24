@@ -10,12 +10,6 @@ knitr::opts_chunk$set(echo = TRUE)
 
 # Correlations between dorms and methods
 
-
-
-
-
-# Input data
-
 Libraries.
 ```{r libs}
 R.Version()$version.string
@@ -77,9 +71,16 @@ yearColors = c('2021'="#00BA38", '2022'="#F8766D", '2023'="#619CFF")
 yearPch = c('2021'=1, '2022'=2, '2023'=3)
 ```
 
+Output
+```{r}
+outDir="../output"
+if (!dir.exists(outDir)) dir.create(outDir)
+```
+
+## Input data
 
 ```{r}
-rna.wide = read.delim("../../data/from_ncat/SARS-CoV-2_RNA-copies/RNA_copies_2021-2023.txt") %>%
+rna.wide = read.delim("../../input/from_ncat/SARS-CoV-2_RNA-copies/RNA_copies_2021-2023.txt") %>%
     mutate(date = mdy(date, tz="")) 
 rna = rna.wide %>% 
     gather(key=dorm, value=RNA.copies, Aggie.V4:Aggie.V6) %>%
@@ -125,7 +126,7 @@ ggplot(rna.wide.stringy,
                           "\n", "Gray line is unity (x=y).", 
                           "\n", "N=", aV4testN)) +
     theme_classic()
-ggsave("output/sampleMethod_AggieV4.pdf", width = 7, height = 7)
+ggsave("../output/sampleMethod_AggieV4.pdf", width = 7, height = 7)
 ```
 
 Plot Barbee values.
@@ -151,7 +152,7 @@ ggplot(rna.wide.stringy,
                           "\n", "N=", barbeeTestN)) +
     theme_classic()
 
-ggsave("output/sampleMethod_Barbee.pdf", width = 7, height = 7)
+ggsave("../output/sampleMethod_Barbee.pdf", width = 7, height = 7)
 ```
 
 
@@ -183,8 +184,8 @@ corList.spearman$r %>% tidyMelt(values="cor") %>% make_heatmap_1() +
                              midpoint = .8, limit = c(0,0.9999), space = "Lab",
                              na.value = "gray30") +
     ggtitle("Spearman Correlation Coefficient")
-ggsave("output/dorm-ww-cor-matrix_rho.pdf")
-write.my.table(corList.spearman$r, "output/dorm-ww-cor-matrix_rho.txt")
+ggsave("../output/dorm-ww-cor-matrix_rho.pdf")
+write.my.table(corList.spearman$r, "../output/dorm-ww-cor-matrix_rho.txt")
 
 negLogPvals = -log10(corList.spearman$P)
 negLogPvals %>% tidyMelt(values="cor") %>% make_heatmap_1() +
@@ -193,8 +194,8 @@ negLogPvals %>% tidyMelt(values="cor") %>% make_heatmap_1() +
                              name="-log10(p)",
                              na.value = "gray30") +
     ggtitle("Spearman - p-values")
-ggsave("output/dorm-ww-cor-matrix_p.pdf")
-write.my.table(corList.spearman$r, "output/dorm-ww-cor-matrix_p.txt")
+ggsave("../output/dorm-ww-cor-matrix_p.pdf")
+write.my.table(corList.spearman$r, "../output/dorm-ww-cor-matrix_p.txt")
 
 corList.spearman$n %>% tidyMelt(values="cor") %>% make_heatmap_1() +
     scale_fill_gradient2(low = "blue", high = "orange", mid = "white",
@@ -202,8 +203,8 @@ corList.spearman$n %>% tidyMelt(values="cor") %>% make_heatmap_1() +
                              name="N",
                              na.value = "gray30") +
     ggtitle("Number pairwise complete observations")
-ggsave("output/dorm-ww-cor-matrix_n.pdf")
-write.my.table(corList.spearman$r, "output/dorm-ww-cor-matrix_n.txt")
+ggsave("../output/dorm-ww-cor-matrix_n.pdf")
+write.my.table(corList.spearman$r, "../output/dorm-ww-cor-matrix_n.txt")
 ```
 
 
@@ -243,7 +244,7 @@ hist(corLong$cor, breaks=40, col="lightblue", las=1, xlim=c(0,1), main="between 
 ```
 
 ```{r}
-pdf("output/between-dorm-correlations.pdf", width = 5, height = 4)
+pdf("../output/between-dorm-correlations.pdf", width = 5, height = 4)
 hist(corLong$cor, breaks=40, col="lightblue", las=1, xlim=c(0,1), main="between dorm correlations", xlab="Spearmans Rho")
 
 hist(corLong$cor, breaks=40, col="lightblue", las=1, xlim=c(0,1), main="between dorm correlations", xlab="Spearmans Rho")

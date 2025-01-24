@@ -118,7 +118,7 @@ Set color constants for the year.
 ```{r}
 # based on ggplot defaults
 yearColors = c('2021'="#00BA38", '2022'="#F8766D", '2023'="#619CFF")
-yearPch = c('2021'=1, '2022'=2, '2023'=3)
+yearPch = c('2021'=15, '2022'=16, '2023'=17)
 ```
 
 
@@ -130,70 +130,43 @@ ratioColor = "pink"
 rnaTypeColorPalette = c(sarsColor = "coral", pmmColor="dodgerblue", ratioColor="pink")
 ```
 
-
-<!-- # NCA&T Reference -->
-
-<!-- I got the dates for the first and last day of classes for spring and fall sessions for the terms corresponding to the NCA&T data. -->
-
-<!-- ```{r} -->
-<!-- classDates = read.delim("../../data/from_www/ncat_class-sessions.txt", comment.char = "#") %>% -->
-<!--     select(term, season, classesStart, classesEnd) %>% -->
-<!--     # when parsing the date, use tz="" so the resulting date object is a POSIXct object to be compatible with ggplot2 -->
-<!--     mutate(classesStart = dmy(classesStart, tz=""))  %>% -->
-<!--     mutate(classesEnd = dmy(classesEnd, tz=""))  -->
-<!-- classDates -->
-<!-- ``` -->
+Output
+```{r}
+outDir="../output"
+if (!dir.exists(outDir)) dir.create(outDir)
+```
 
 
-<!-- # Data from NCS&T -->
+# NCA&T Reference
 
-<!-- This is data that was emailed to Ivory Blakley by Shilpi Bhatia. -->
+I got the dates for the first and last day of classes for spring and fall sessions for the terms corresponding to the NCA&T data.
 
-<!-- ## Clinical Cases -->
+```{r}
+classDates = read.delim("../../input/from_www/ncat_class-sessions.txt", comment.char = "#") %>%
+    select(term, season, classesStart, classesEnd) %>%
+    # when parsing the date, use tz="" so the resulting date object is a POSIXct object to be compatible with ggplot2
+    mutate(classesStart = dmy(classesStart, tz=""))  %>%
+    mutate(classesEnd = dmy(classesEnd, tz=""))
+classDates
+```
 
-<!-- Read the number of cases per month.  Parse dates as date objects.  The parsed dates will be given as the day at the end of the month, because I assume that is the reporting time for the month as a whole. However, the plotting package (ggplot2) seems to want to draw the January line at January first. -->
 
-<!-- ```{r} -->
-<!-- cc = read.delim("../../data/from_ncat/campus_clinical-cases/clinical_cases_2021-2023.txt") %>%  -->
-<!--     select(month, clinical.cases) %>%  -->
-<!--     filter(!is.na(month)) %>%  -->
-<!--     filter(!is.na(clinical.cases))  -->
-<!-- cc$time.month.start = floor_date(dmy(paste0("15-", cc$month), tz=""), unit = "month") %>% as.POSIXct() -->
-<!-- cc$time.month.end = ceiling_date(dmy(paste0("15-", cc$month), tz=""), unit = "month") %>% as.POSIXct() -->
-<!-- head(cc,3) -->
-<!-- ``` -->
+## NCAT clinical cases
 
-<!-- This is a table of ``r nrow(cc)`` rows, with dates ranging from ``r min(cc$time.month)`` to ``r max(cc$time.month)``. -->
-
-<!-- Plot cases over time. show each month as a time range rather than a time point so as to clearly show what time range that data represents. Use shaded rectangles to indicate the time range of classes for spring and fall semesters. -->
-
-<!-- ```{r} -->
-<!-- ggplot(cc, aes(x=time.month.start, y=clinical.cases)) + -->
-<!--     xlab("time (month)") + -->
-<!--     scale_x_datetime(labels = date_format("%b%y")) + -->
-<!--     # scale_x_continuous(labels = month) + -->
-<!--     ylab("number of clinical cases") + -->
-<!--     scale_fill_manual(values=termSeasonPalette) + -->
-<!--     geom_rect(data=classDates, inherit.aes=FALSE, -->
-<!--             aes(xmin=classesStart, xmax=classesEnd, -->
-<!--                 ymin=-Inf, ymax=Inf, -->
-<!--                 fill = season), alpha=.5) + -->
-<!--     geom_point() + -->
-<!--     geom_line(col="gray", aes(x=time.month.end, y=clinical.cases)) + -->
-<!--     geom_segment(aes(x=time.month.start, xend=time.month.end, y=clinical.cases)) + -->
-<!--     ggtitle("NCA&T clinical cases") + -->
-<!--     theme_minimal() -->
-<!-- ``` -->
-
-<!-- ```{r} -->
-<!-- ggsave("output/NCAT_clinical_cases.png", height = 5, width = 7) -->
-<!-- ``` -->
-
+```{r}
+cc = read.delim("../../input/from_ncat/campus_clinical-cases/clinical_cases_2021-2023.txt") %>%
+    select(month, clinical.cases) %>%
+    filter(!is.na(month)) %>%
+    filter(!is.na(clinical.cases))
+cc$time.month.start = floor_date(dmy(paste0("15-", cc$month), tz=""), unit = "month") %>% as.POSIXct()
+cc$time.month.end = ceiling_date(dmy(paste0("15-", cc$month), tz=""), unit = "month") %>% as.POSIXct()
+head(cc,3)
+```
 
 ## PMMoV data
 
 ```{r}
-pmm = read.delim("../../data/from_ncat/PMMoV/PMMoV_SARS_2022-2023.txt") %>%
+pmm = read.delim("../../input/from_ncat/PMMoV/PMMoV_SARS_2022-2023.txt") %>%
     select(date, SARS.CoV.2.means, PMMoV.means, ratio.SARStoPMMoV) %>%
     mutate(date = mdy(date, tz="")) %>%
     mutate(logRatioS2P = log10(SARS.CoV.2.means) / log10(PMMoV.means))
@@ -221,16 +194,7 @@ ggplot(pmm %>% mutate(year=as.character(year(date))),
 ```
 
 ```{r}
-ggsave("output/PMMoV-vs-SAR_means.png", height = 4, width = 5)
-```
-
-
-
-```{r}
-# plot(x=pmm$ratio.SARStoPMMoV, y = (pmm$SARS.CoV.2.means/pmm$PMMoV.means)); abline(0,1)
-# plot(x=pmm$ratio.SARStoPMMoV, y = (log10(pmm$SARS.CoV.2.means)/log10(pmm$PMMoV.means))); abline(0,1)
-# plot(x=1:nrow(pmm), y = (pmm$SARS.CoV.2.means/pmm$PMMoV.means))
-# plot(x=1:nrow(pmm), y = (log10(pmm$SARS.CoV.2.means)/log10(pmm$PMMoV.means)))
+ggsave("../output/PMMoV-vs-SAR_means.png", height = 4, width = 5)
 ```
 
 
@@ -264,55 +228,14 @@ jointPlot = ggplot(pmmLong, aes(x=date, y=Concentration, col=Virus)) +
     scale_color_manual(values=c(SARS.CoV.2.means=sarsColor, PMMoV.means=pmmColor, logRatioS2P=ratioColor))
 
 jointPlot
-ggsave("output/jointPlot.png")
+ggsave("../output/jointPlot.png")
 
 jointPlot + facet_wrap("Virus", ncol=1, scales="free_y")
-ggsave("output/jointPlot2.png")
+ggsave("../output/jointPlot2.png")
 ```
 
 Question 1: is SARS raw data a better match for campus clinical data than the SARS/PMM data?
 
-
-
-bonus question: is the variation less in PMM than SARS? ---not important question.
-
-
-```{r}
-# # Put both on a log scale.
-# pmmPlot = pmm %>%
-#     mutate(SARS.log10 = log10(SARS.CoV.2.means)) %>%
-#     mutate(PMM.log10 = log10(PMMoV.means))
-# 
-# 
-# # this post was very helpful: https://r-graph-gallery.com/line-chart-dual-Y-axis-ggplot2.html
-# 
-# # Value used to transform the data
-# coeff = max(pmmPlot$SARS.log10) / max(pmmPlot$PMM.log10)
-# 
-# ggplot(pmmPlot, aes(x=date)) +
-#   
-#   geom_line( aes(y=SARS.log10), linewidth=2, color=sarsColor) + 
-#   geom_line( aes(y=PMM.log10 / coeff), linewidth=2, color=pmmColor) +
-#   
-#   scale_y_continuous(
-#     
-#     # Features of the first axis
-#     name = "SARS (Log 10)",
-#     
-#     # Add a second axis and specify its features
-#     sec.axis = sec_axis(~.*coeff, name="PMMoV (log10)")
-#   ) + 
-#   
-#   theme_minimal() +
-# 
-#   theme(
-#     axis.title.y = element_text(color = sarsColor, size=13),
-#     axis.title.y.right = element_text(color = pmmColor, size=13)
-#   ) +
-# 
-#   ggtitle("SARS and PMM")
-
-```
 
 
 
@@ -321,8 +244,8 @@ bonus question: is the variation less in PMM than SARS? ---not important questio
 I wonder if our total lack of corralation between PMMoV and SARS may actually be because we have collapsed the data by across unrelated samples.  So I asked Shilpi for the per-drom data.
 
 ```{r}
-pmmD.2022 = read.delim("../../data/from_ncat/PMMoV/PMMoV_2022_by-dorm_2024-07-08.txt")
-pmmD.2023 = read.delim("../../data/from_ncat/PMMoV/PMMoV_2023_by-dorm_2024-07-08.txt")
+pmmD.2022 = read.delim("../../input/from_ncat/PMMoV/PMMoV_2022_by-dorm_2024-07-08.txt")
+pmmD.2023 = read.delim("../../input/from_ncat/PMMoV/PMMoV_2023_by-dorm_2024-07-08.txt")
 
 # only 2022 has data for Aggie.V6, and only a few dates; drop the Aggie.V6 columns.
 iNames = intersect(names(pmmD.2022), names(pmmD.2023))
@@ -431,7 +354,7 @@ No. There were no instances (seeing 0 above) of any pair of dorms that had a sig
 
 
 ```{r}
-rna.wide = read.delim("../../data/from_ncat/SARS-CoV-2_RNA-copies/RNA_copies_2021-2023.txt") %>%
+rna.wide = read.delim("../../input/from_ncat/SARS-CoV-2_RNA-copies/RNA_copies_2021-2023.txt") %>%
     mutate(date = mdy(date, tz="")) 
 rna = rna.wide %>% 
     gather(key=dorm, value=RNA.copies, Aggie.V4:Aggie.V6) %>%
@@ -470,7 +393,7 @@ ggplot(pmm.merged, aes(x=PMMoV, y=SARS,
                           "\n", "Gray line is unity (x=y).", 
                           "\n", "N=", pmmSars.cor.test.N)) 
 
-ggsave("output/PMMoV-vs-SARS_by-sample_withLegend.png", width = 6, height = 5)
+ggsave("../output/PMMoV-vs-SARS_by-sample_withLegend.png", width = 6, height = 5)
 
 ggplot(pmm.merged, aes(x=PMMoV, y=SARS, color=as.character(date))) +
     scale_x_log10() +
@@ -566,73 +489,6 @@ hist(unlist(pvals), breaks=20, main="SARS vs PMMoV within a dorm")
 abline(v=0.05)
 ```
 
-
-### Auto Sampling (AS)
-
-<!-- Note on methods: -->
-<!-- AggieV4 hall and Barbee. -->
-<!-- grab sampling -- all non-AS samples -->
-<!-- compound sampling --> AS auto-sampling -->
-
-<!-- ```{r} -->
-<!-- rna.wide.stringy = rna.wide %>%  -->
-<!--     mutate(day = day(date)) %>% -->
-<!--     mutate(month = month(date, label=T)) %>% -->
-<!--     mutate(year = as.character(year(date))) %>% -->
-<!--     mutate(dateString=paste(day, month, year, sep="-")) -->
-
-<!-- aV4test = cor.test(x=rna.wide$Aggie.V4, y=rna.wide$Aggie.V4.AS, use="complete", method="spearman") -->
-<!-- aV4testN = sum(!is.na(rna.wide$Aggie.V4) & !is.na(rna.wide$Aggie.V4.AS)) -->
-
-<!-- ggplot(rna.wide.stringy,  -->
-<!--        aes(x=Aggie.V4, y=Aggie.V4.AS, label=dateString, col=year)) + -->
-<!--     scale_y_log10() + -->
-<!--     scale_x_log10() + -->
-<!--     scale_color_manual(values=yearColors) + -->
-<!--     xlab("Grab Sampling") + -->
-<!--     ylab("Auto Sampling") + -->
-<!--     ggtitle("Aggie V4 - comparative sampling methods", sub="RNA copies per liter") + -->
-<!--     geom_abline(slope=1, intercept = 0, alpha=.2) + -->
-<!--     # annotate("text", x=1e16, y=1e17, label="unity", alpha=.3, position="dodge", angle=35) + -->
-<!--     geom_point() + -->
-<!--     geom_text_repel(show.legend = F) + -->
-<!--     labs(caption = paste0("Spearmans rho: ", round(aV4test$estimate, 3),  -->
-<!--                           "\n", "p-value: ", aV4test$p.value, "; -log10(p): ", -log10(aV4test$p.value), -->
-<!--                           "\n", "Gray line is unity (x=y).",  -->
-<!--                           "\n", "N=", aV4testN)) + -->
-<!--     theme_minimal() -->
-<!-- ggsave("output/sampleMethod_AggieV4.png") -->
-
-
-<!-- barbeeTest = cor.test(x=rna.wide$Barbee, y=rna.wide$Barbee.AS, use="complete", method="spearman") -->
-<!-- barbeeTestN = sum(!is.na(rna.wide$Barbee) & !is.na(rna.wide$Barbee.AS)) -->
-
-<!-- ggplot(rna.wide.stringy,  -->
-<!--        aes(x=Barbee, y=Barbee.AS, label=dateString, col=year, pch=year)) + -->
-<!--     scale_y_log10() + -->
-<!--     scale_x_log10() + -->
-<!--     scale_color_manual(values=yearColors) + -->
-<!--     scale_shape_manual(values=yearPch) + -->
-<!--     xlab("Grab Sampling") + -->
-<!--     ylab("Auto Sampling") + -->
-<!--     ggtitle("Barbee - comparative sampling methods", sub="RNA copies per liter") + -->
-<!--     geom_abline(slope=1, intercept = 0, alpha=.2) + -->
-<!--     # annotate("text", x=1e16, y=1e17, label="unity", alpha=.3, angle=35) + -->
-<!--     geom_point() + -->
-<!--     geom_text_repel(show.legend = F) + -->
-<!--     labs(caption = paste0("Spearmans rho: ", round(barbeeTest$estimate, 3),  -->
-<!--                           "\n", "p-value: ", barbeeTest$p.value, "; -log10(p): ", -log10(barbeeTest$p.value), -->
-<!--                           "\n", "Gray line is unity (x=y).", -->
-<!--                           "\n", "N=", barbeeTestN)) + -->
-<!--     theme_minimal() -->
-<!-- ggsave("output/sampleMethod_Barbee.png") -->
-<!-- ``` -->
-
-<!-- These two sampling approaches produce very significantly correlated results.   -->
-
-<!-- It is still possible that one or the other method is more effective at predicting clinical outcomes (perhaps even significantly).   -->
-
-
 ### Grab Sampling
 
 For the rest, we'll ignore the AS data, so that we only represent each residence once.
@@ -674,115 +530,15 @@ rcplot
 ```
 
 ```{r}
-ggsave("output/SARS-CoV-2_RNA-copies-over-time_1.png")
+ggsave("../output/SARS-CoV-2_RNA-copies-over-time_1.png")
 ```
 
 
 ```{r fig.height=20}
 # TODO: save, don't show
 rcplot + facet_wrap("dorm", ncol=1, scale="free_y")
-ggsave("output/SARS-CoV-2_RNA-copies-over-time_1_faceted.png", height = 12, width = 6)
+ggsave("../output/SARS-CoV-2_RNA-copies-over-time_1_faceted.png", height = 12, width = 6)
 ```
-
-<!-- ### correlation between dorms -->
-
-<!-- How correlated are the dorms? -->
-
-<!-- ```{r} -->
-<!-- table(rna$dorm) -->
-<!-- ``` -->
-
-<!-- ```{r} -->
-<!-- corList.spearman = rcorr(rna.wide %>% select(-date) %>% as.matrix(),type="spearman") -->
-
-<!-- write.my.table <- function(df, file){ -->
-<!--     write.table(x=cbind(drom=row.names(df), df), -->
-<!--                 file=file, -->
-<!--                 sep="\t", quote=F, row.names=F) -->
-<!-- } -->
-
-<!-- corList.spearman$r %>% tidyMelt(values="cor") %>% make_heatmap_1() + -->
-<!--     scale_fill_gradient2(low = "red", high = "blue", mid = "white", -->
-<!--                              midpoint = .8, limit = c(0,0.9999), space = "Lab", -->
-<!--                              na.value = "gray30") + -->
-<!--     ggtitle("Spearman Correlation Coefficient") -->
-<!-- ggsave("output/dorm-ww-cor-matrix_rho.png") -->
-<!-- write.my.table(corList.spearman$r, "output/dorm-ww-cor-matrix_rho.txt") -->
-
-<!-- negLogPvals = -log10(corList.spearman$P) -->
-<!-- negLogPvals %>% tidyMelt(values="cor") %>% make_heatmap_1() + -->
-<!--     scale_fill_gradient2(low = "blue", high = "red", mid = "white", -->
-<!--                              midpoint = -log10(0.05), limit = c(0,max(negLogPvals)), space = "Lab", -->
-<!--                              name="-log10(p)", -->
-<!--                              na.value = "gray30") + -->
-<!--     ggtitle("Spearman - p-values") -->
-<!-- ggsave("output/dorm-ww-cor-matrix_p.png") -->
-<!-- write.my.table(corList.spearman$r, "output/dorm-ww-cor-matrix_p.txt") -->
-
-<!-- corList.spearman$n %>% tidyMelt(values="cor") %>% make_heatmap_1() + -->
-<!--     scale_fill_gradient2(low = "blue", high = "orange", mid = "white", -->
-<!--                              midpoint = 0, limit = c(0,max(corList.spearman$n)), space = "Lab", -->
-<!--                              name="N", -->
-<!--                              na.value = "gray30") + -->
-<!--     ggtitle("Number pairwise complete observations") -->
-<!-- ggsave("output/dorm-ww-cor-matrix_n.png") -->
-<!-- write.my.table(corList.spearman$r, "output/dorm-ww-cor-matrix_n.txt") -->
-<!-- ``` -->
-
-
-<!-- ```{r} -->
-<!-- # corUpperTri = corList.spearman$r -->
-<!-- # corUpperTri[!upper.tri(corUpperTri)] = NA -->
-<!-- # corLong = corUpperTri %>% -->
-<!-- #     as.data.frame() %>% -->
-<!-- #     mutate(rowName=row.names(corUpperTri)) %>% -->
-<!-- #     gather(key=dorm, value=cor, -rowName) %>% -->
-<!-- #     filter(!is.na(cor)) -->
-
-<!-- corLong = gatherCorMatrix(corList.spearman$r) -->
-
-
-<!-- summary(corLong$cor) -->
-<!-- ``` -->
-
-<!-- We have one case with a very low correlation.  This Aggie.V6 and Holland, which is the intersection of the two dorms with the fewest samples. -->
-
-<!-- ```{r} -->
-<!-- corLong %>% filter(cor == min(cor)) -->
-<!-- ``` -->
-
-<!-- Excluding that pair of dorms, all dorms had pretty good correlation values. -->
-<!-- ```{r} -->
-<!-- nextMin = corLong %>% filter(cor != min(cor)) %>% select(cor) %>% min() -->
-<!-- nextMin -->
-<!-- nextNextMin = corLong %>% filter(cor != min(cor)) %>% filter(cor != min(cor)) %>% select(cor) %>% min() -->
-<!-- nextNextMin -->
-<!-- ``` -->
-
-<!-- The next two lowest values are around .5. -->
-
-<!-- ```{r} -->
-<!-- hist(corLong$cor, breaks=40, col="lightblue", las=1, xlim=c(0,1), main="between dorm correlations", xlab="Spearmans Rho") -->
-<!-- abline(v=barbeeTest$estimate, lwd=3) -->
-<!-- abline(v=aV4test$estimate, lwd=3) -->
-<!-- ``` -->
-
-<!-- The correlation values for the between-method correlations for the same building are shown for reference. -->
-
-<!-- Barbee: ``r barbeeTest$estimate`` -->
-
-<!-- Aggie V4: ``r aV4test$estimate`` -->
-
-<!-- ```{r} -->
-<!-- corLong %>% arrange(cor) %>% head(n=10) -->
-<!-- # corLong %>% filter(rowName=="Aggie.V1" | rowName=="Aggie.V3") %>% filter(dorm=="Aggie.V1" | dorm=="Aggie.V3") -->
-<!-- ``` -->
-
-<!-- Haley Hall and Pride Hall are very close together on the NCA&T map. https://www.ussportscamps.com/pdf/running/ncat_campusmap.pdf -->
-
-<!-- So are Barbee and Morrow, but on the other end of compus. -->
-
-############
 
 ### dorm and date -  linear model
 
@@ -849,53 +605,54 @@ lou.plot.list[[5]]
 
 
 
-<!-- ## Per dorm clinical data -->
+### Per dorm clinical data
 
-<!-- ```{r} -->
-<!-- ccd = read.delim("clincial-data-2021/output/reported-pos-tests_all_2021_byWeek.txt",  -->
-<!--                  check.names = F) %>% -->
-<!--     replace(is.na(.), 0) %>% -->
-<!--     rename(dorm = Residence) -->
+```{r}
+ccd = read.delim("../../input/from_ncat/campus_clinical-cases/reported-pos-tests_all_2021_byWeek.txt",
+                 check.names = F) %>%
+    replace(is.na(.), 0) %>%
+    rename(dorm = Residence)
 
-<!-- ccd.long = ccd %>%  -->
-<!--     gather(key=date, value=clinical.cases, -dorm) %>% -->
-<!--     mutate(date = ymd(date, tz = "")) -->
+ccd.long = ccd %>% 
+    gather(key=date, value=clinical.cases, -dorm) %>%
+    mutate(date = ymd(date, tz = ""))
+```
 
-<!-- ``` -->
+```{r}
+minDate = min(c(rna$date, classDates$classesStart, ccd.long$date))
+maxDate = ymd("2021-12-20", tz="") #max(c(rna$date, classDates$classesEnd, ccd.long$date))
+
+ccplot = ggplot(ccd.long, aes(x=date, y=clinical.cases, col=dorm)) +
+    # scale_y_log10() +
+    ylab("number clinical cases") +
+    scale_color_manual(values=dormColors) +
+    scale_fill_manual(values=termSeasonPalette) +
+    xlim(minDate, maxDate) +
+    geom_rect(data=classDates, inherit.aes=FALSE,
+              aes(xmin=classesStart, xmax=classesEnd,
+                  ymin=-Inf, ymax=Inf,
+                  fill = season), alpha=.2) +
+    geom_point() +
+    geom_line(alpha=.2) +
+    theme_minimal() +
+    ggtitle("SARS-CoV-2 Clinical Cases in 2021, by dorm")
+ccplot
+
+```
+
+```{r}
+ggsave(plot=ccplot, "../output/clinical-cases_2021_by-dorm_together.png", width = 6, height = 4)
+```
+
+```{r}
+ccplot + facet_wrap("dorm", ncol=2, scales="free_y")
+```
+
+```{r}
+ggsave("../output/clinical-cases_2021_by-dorm_faceted.png", height = 8, width = 7)
+```
 
 
-<!-- ```{r} -->
-<!-- minDate = min(c(rna$date, classDates$classesStart, ccd.long$date)) -->
-<!-- maxDate = ymd("2021-12-20", tz="") #max(c(rna$date, classDates$classesEnd, ccd.long$date)) -->
-
-<!-- ccplot = ggplot(ccd.long, aes(x=date, y=clinical.cases, col=dorm)) + -->
-<!--     # scale_y_log10() + -->
-<!--     ylab("number clinical cases") + -->
-<!--     scale_color_manual(values=dormColors) + -->
-<!--     scale_fill_manual(values=termSeasonPalette) + -->
-<!--     xlim(minDate, maxDate) + -->
-<!--     geom_rect(data=classDates, inherit.aes=FALSE, -->
-<!--               aes(xmin=classesStart, xmax=classesEnd, -->
-<!--                   ymin=-Inf, ymax=Inf, -->
-<!--                   fill = season), alpha=.2) + -->
-<!--     geom_point() + -->
-<!--     geom_line(alpha=.2) + -->
-<!--     theme_minimal() + -->
-<!--     ggtitle("SARS-CoV-2 Clinical Cases in 2021, by dorm") -->
-<!-- ccplot -->
-<!-- ``` -->
-
-<!-- ```{r} -->
-<!-- ggsave(plot=ccplot, "output/clinical-cases_2021_by-dorm_together.png", width = 6, height = 4) -->
-<!-- ``` -->
-
-<!-- ```{r} -->
-<!-- ccplot + facet_wrap("dorm", ncol=2, scales="free_y") -->
-<!-- ``` -->
-
-<!-- ```{r} -->
-<!-- ggsave("output/clinical-cases_2021_by-dorm_faceted.png", height = 8, width = 7) -->
-<!-- ``` -->
 
 ### RNA copies and case counts per dorm together
 
@@ -913,7 +670,7 @@ rna.tmp4 = summarise(.data=rna.tmp, .by=c(week, dorm), mean=mean(RNA.copies))
 rna.week.summary = merge(merge(rna.tmp1, rna.tmp2),
                          merge(rna.tmp3, rna.tmp4)) %>%
     arrange(desc(n))
-write.table(rna.week.summary, file="output/summarize_RNA-copies_per-week.txt", 
+write.table(rna.week.summary, file="../output/summarize_RNA-copies_per-week.txt", 
             sep="\t", quote=F, row.names=F)
 plot(log10(rna.week.summary$mean), log10(rna.week.summary$max))
 
@@ -1032,7 +789,7 @@ scatPlot.together = scatPlot +
 scatPlot.together
 ```
 ```{r}
-ggsave(scatPlot.together, filename="output/scatter_clinical-cases_vs_RNA.copies_perDorm_together_max.png", width = 5, height = 5)
+ggsave(scatPlot.together, filename="../output/scatter_clinical-cases_vs_RNA.copies_perDorm_together_max.png", width = 5, height = 5)
 ```
 
 ...and if we had used mean instead...
@@ -1062,7 +819,7 @@ scatPlot.together = scatPlot +
                         "\nN: ", nrow(rna.cc.d)))
 scatPlot.together
 
-ggsave(scatPlot.together, filename="output/scatter_clinical-cases_vs_RNA.copies_perDorm_together_mean.png", width = 5, height = 5)
+ggsave(scatPlot.together, filename="../output/scatter_clinical-cases_vs_RNA.copies_perDorm_together_mean.png", width = 5, height = 5)
 ```
 
 
@@ -1079,7 +836,7 @@ dorm.cors = lapply(rna.cc.d.split,
 dorm.stat.table = data.frame(N = sapply(rna.cc.d.split, nrow),
                              p.value = sapply(dorm.cors, "[[", "p.value"),
                              rho = sapply(dorm.cors, "[[", "estimate"))
-write.table(cbind(dorm=row.names(dorm.stat.table), dorm.stat.table), "output/spearman_clinical-cases_vs_RNA.copies_perDorm.txt",
+write.table(cbind(dorm=row.names(dorm.stat.table), dorm.stat.table), "../output/spearman_clinical-cases_vs_RNA.copies_perDorm.txt",
             sep="\t", row.names = F, quote=F)
 dorm.stat.table
 ```
@@ -1090,7 +847,7 @@ dorm.stat.table
 scatPlot + facet_wrap("dorm", ncol=3)
 ```
 ```{r}
-ggsave("output/scatter_clinical-cases_vs_RNA.copies_perDorm_faceted.png", width = 7, height = 8)
+ggsave("../output/scatter_clinical-cases_vs_RNA.copies_perDorm_faceted.png", width = 7, height = 8)
 ```
 
 
@@ -1139,120 +896,120 @@ anova(m.mixed)
 ## Percent Positive cases
 
 
-## County state Campus - pairwise
+<!-- ## County state Campus - pairwise -->
 
-### Clinical cases
+<!-- ### Clinical cases -->
 
-campus vs county, campus vs state, state vs county
+<!-- campus vs county, campus vs state, state vs county -->
 
-For campus use:
-    file: total_clinical_cases_2021-2023.xlsx
-    column: 
+<!-- For campus use: -->
+<!--     file: total_clinical_cases_2021-2023.xlsx -->
+<!--     column:  -->
 
-For state use:   
-    file: TABLE_DAILY_CASE&DEATH_METRICS.xlsx
-    column:Molecular (PCR) Positive Cases by Specimen Date ---> sum by month to match "total_clinical_cases_2021-2023.xlsx"
-```{r}
-state.cc = read.delim("data/from_covid19.ncdhhs.gov/TABLE_DAILY_CASE-DEATHS_METRICS.txt") %>%
-    select(Date, Molecular..PCR..Positive.Cases.by.Specimen.Date) %>%
-    # note the odd format: day/month/year
-    mutate(date = dmy(Date, tz="")) %>%
-    mutate(monthYear = paste(month(date, label=T), year(date))) %>%
-    # note that many of these values have commas, ex: "1,655"
-    mutate(no.commas.pcr.Positive.Cases= gsub(x=Molecular..PCR..Positive.Cases.by.Specimen.Date, pattern=",", "")) %>%
-    mutate(pcr.Positive.Cases = as.numeric(no.commas.pcr.Positive.Cases))
-head(state.cc)
-```
+<!-- For state use:    -->
+<!--     file: TABLE_DAILY_CASE&DEATH_METRICS.xlsx -->
+<!--     column:Molecular (PCR) Positive Cases by Specimen Date ---> sum by month to match "total_clinical_cases_2021-2023.xlsx" -->
+<!-- ```{r} -->
+<!-- state.cc = read.delim("data/from_covid19.ncdhhs.gov/TABLE_DAILY_CASE-DEATHS_METRICS.txt") %>% -->
+<!--     select(Date, Molecular..PCR..Positive.Cases.by.Specimen.Date) %>% -->
+<!--     # note the odd format: day/month/year -->
+<!--     mutate(date = dmy(Date, tz="")) %>% -->
+<!--     mutate(monthYear = paste(month(date, label=T), year(date))) %>% -->
+<!--     # note that many of these values have commas, ex: "1,655" -->
+<!--     mutate(no.commas.pcr.Positive.Cases= gsub(x=Molecular..PCR..Positive.Cases.by.Specimen.Date, pattern=",", "")) %>% -->
+<!--     mutate(pcr.Positive.Cases = as.numeric(no.commas.pcr.Positive.Cases)) -->
+<!-- head(state.cc) -->
+<!-- ``` -->
 
-Take a sum for each month.
-```{r}
-state.cc.month = state.cc %>%
-    select(monthYear, pcr.Positive.Cases) %>%
-    group_by(monthYear) %>%
-    summarise(state.pcr.pos.cases.month=sum(pcr.Positive.Cases, na.rm=T)) %>%
-    mutate(time.month.start=dmy(paste0("1 ", monthYear), tz=""))
-head(state.cc.month)
-```
-Recall NCA&T clinical cases from earlier...
-```{r}
-# cc = read.delim("data/from_Shilpi/clinical_cases_2021-2023.txt") %>% 
-#     select(month, clinical.cases) %>% 
-#     filter(!is.na(month)) %>% 
-#     filter(!is.na(clinical.cases))
-# cc$time.month.start = floor_date(dmy(paste0("15-", cc$month)), unit = "month") %>% as.POSIXct()
-# cc$time.month.end = ceiling_date(dmy(paste0("15-", cc$month)), unit = "month") %>% as.POSIXct()
-head(cc,3)
-```
+<!-- Take a sum for each month. -->
+<!-- ```{r} -->
+<!-- state.cc.month = state.cc %>% -->
+<!--     select(monthYear, pcr.Positive.Cases) %>% -->
+<!--     group_by(monthYear) %>% -->
+<!--     summarise(state.pcr.pos.cases.month=sum(pcr.Positive.Cases, na.rm=T)) %>% -->
+<!--     mutate(time.month.start=dmy(paste0("1 ", monthYear), tz="")) -->
+<!-- head(state.cc.month) -->
+<!-- ``` -->
+<!-- Recall NCA&T clinical cases from earlier... -->
+<!-- ```{r} -->
+<!-- # cc = read.delim("data/from_Shilpi/clinical_cases_2021-2023.txt") %>%  -->
+<!-- #     select(month, clinical.cases) %>%  -->
+<!-- #     filter(!is.na(month)) %>%  -->
+<!-- #     filter(!is.na(clinical.cases)) -->
+<!-- # cc$time.month.start = floor_date(dmy(paste0("15-", cc$month)), unit = "month") %>% as.POSIXct() -->
+<!-- # cc$time.month.end = ceiling_date(dmy(paste0("15-", cc$month)), unit = "month") %>% as.POSIXct() -->
+<!-- head(cc,3) -->
+<!-- ``` -->
 
-merge state and campus data
-```{r}
-x = cc %>% 
-    mutate(campus.clinical.cases=clinical.cases) %>% 
-    select(campus.clinical.cases, time.month.start) %>%
-    mutate(time.month.start = as.character(time.month.start))
-y = state.cc.month %>% 
-    select(state.pcr.pos.cases.month, time.month.start) %>%
-    as.data.frame() %>%
-    mutate(time.month.start = as.character(time.month.start))
-head(x)
-head(y)
-m.cc = merge(x = x,
-             y = y, 
-             by="time.month.start") %>%
-    mutate(time.month.start = ymd(time.month.start, tz=""))
-head(m.cc)
-```
+<!-- merge state and campus data -->
+<!-- ```{r} -->
+<!-- x = cc %>%  -->
+<!--     mutate(campus.clinical.cases=clinical.cases) %>%  -->
+<!--     select(campus.clinical.cases, time.month.start) %>% -->
+<!--     mutate(time.month.start = as.character(time.month.start)) -->
+<!-- y = state.cc.month %>%  -->
+<!--     select(state.pcr.pos.cases.month, time.month.start) %>% -->
+<!--     as.data.frame() %>% -->
+<!--     mutate(time.month.start = as.character(time.month.start)) -->
+<!-- head(x) -->
+<!-- head(y) -->
+<!-- m.cc = merge(x = x, -->
+<!--              y = y,  -->
+<!--              by="time.month.start") %>% -->
+<!--     mutate(time.month.start = ymd(time.month.start, tz="")) -->
+<!-- head(m.cc) -->
+<!-- ``` -->
 
-```{r}
-# ymax.state=max(m.cc$state.pcr.pos.cases.month)
-# ymax.campus=max(m.cc$campus.clinical.cases)
-# 
-# 
-# ggplot(m.cc, aes(x=time.month.start, y=state.pcr.pos.cases.month)) +
-#     geom_point() + 
-#     geom_line() +
-#     geom_point(aes(y=campus.clinical.cases))
-```
+<!-- ```{r} -->
+<!-- # ymax.state=max(m.cc$state.pcr.pos.cases.month) -->
+<!-- # ymax.campus=max(m.cc$campus.clinical.cases) -->
+<!-- #  -->
+<!-- #  -->
+<!-- # ggplot(m.cc, aes(x=time.month.start, y=state.pcr.pos.cases.month)) + -->
+<!-- #     geom_point() +  -->
+<!-- #     geom_line() + -->
+<!-- #     geom_point(aes(y=campus.clinical.cases)) -->
+<!-- ``` -->
 
-```{r}
-state.campus.cc.cor.test = cor.test(x=m.cc$campus.clinical.cases, y=m.cc$state.pcr.pos.cases.month, use="complete", method="spearman")
+<!-- ```{r} -->
+<!-- state.campus.cc.cor.test = cor.test(x=m.cc$campus.clinical.cases, y=m.cc$state.pcr.pos.cases.month, use="complete", method="spearman") -->
 
-m.cc$year = as.character(year(m.cc$time.month.start))
+<!-- m.cc$year = as.character(year(m.cc$time.month.start)) -->
 
-stateVcampus = ggplot(m.cc, aes(x=campus.clinical.cases, 
-                                y=state.pcr.pos.cases.month, 
-                                color=year)) +
-    scale_color_manual(values=yearColors) +
-    scale_y_continuous(labels = comma) +
-    geom_point() +
-    xlab("Campus") +
-    ylab("State") +
-    ggtitle("Clinical Cases") +
-    labs(caption=paste0("Spearmans rho: ", round(state.campus.cc.cor.test$estimate, 3),
-                        "\nCor test p-value: ", round(state.campus.cc.cor.test$p.value, 3),
-                        "\nN: ", nrow(m.cc))) +
-    theme_minimal()
-stateVcampus
-```
+<!-- stateVcampus = ggplot(m.cc, aes(x=campus.clinical.cases,  -->
+<!--                                 y=state.pcr.pos.cases.month,  -->
+<!--                                 color=year)) + -->
+<!--     scale_color_manual(values=yearColors) + -->
+<!--     scale_y_continuous(labels = comma) + -->
+<!--     geom_point() + -->
+<!--     xlab("Campus") + -->
+<!--     ylab("State") + -->
+<!--     ggtitle("Clinical Cases") + -->
+<!--     labs(caption=paste0("Spearmans rho: ", round(state.campus.cc.cor.test$estimate, 3), -->
+<!--                         "\nCor test p-value: ", round(state.campus.cc.cor.test$p.value, 3), -->
+<!--                         "\nN: ", nrow(m.cc))) + -->
+<!--     theme_minimal() -->
+<!-- stateVcampus -->
+<!-- ``` -->
 
-A state-wide spike is reflected on campus, not all campus spikes are reflected at the state level.
+<!-- A state-wide spike is reflected on campus, not all campus spikes are reflected at the state level. -->
 
-```{r}
-stateVcampusLog = stateVcampus +
-           scale_x_log10() + 
-           scale_y_log10() +
-           labs(subtitle="log scale")
+<!-- ```{r} -->
+<!-- stateVcampusLog = stateVcampus + -->
+<!--            scale_x_log10() +  -->
+<!--            scale_y_log10() + -->
+<!--            labs(subtitle="log scale") -->
 
-stateVcampusLog
-```
+<!-- stateVcampusLog -->
+<!-- ``` -->
 
 
-```{r}
-ggsave(plot=stateVcampus, "output/clinical-cases_state-vs-campus.png", height = 4, width = 5)
+<!-- ```{r} -->
+<!-- ggsave(plot=stateVcampus, "../output/clinical-cases_state-vs-campus.png", height = 4, width = 5) -->
 
-ggsave(plot=stateVcampusLog, 
-       "output/clinical-cases_state-vs-campus_logScale.png", height = 4, width = 5)
-```
+<!-- ggsave(plot=stateVcampusLog,  -->
+<!--        "../output/clinical-cases_state-vs-campus_logScale.png", height = 4, width = 5) -->
+<!-- ``` -->
 
 
 ### Campus case counts vs RNA.copies --- section moving to sep markdown
