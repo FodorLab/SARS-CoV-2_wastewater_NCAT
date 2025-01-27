@@ -1,0 +1,265 @@
+---
+title: "PMMoV"
+output: html_document
+date: "2024-08-30"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+Revisit slide 3.  We see tight correlation between Aggie V4 AS and Grab.
+We have PMMoV values for AS and Grab.  If we were to normalize the SARS values by these PMMoV values, would that improve the cross-method agreement (ie correlation)?
+If that improves the correlation, that makes an argument in favor of using PMMoV.
+If that makes it worse, or no difference, then PMMoV is not needed.
+
+
+# Setup
+
+Libraries.
+```{r}
+R.Version()$version.string
+tellme <- function(name){message("Package ", name, " version: ", packageVersion(name))}
+library(lubridate); tellme("lubridate")
+library(dplyr); tellme("dplyr")
+library(tidyr); tellme("tidyr")
+library(ggplot2); tellme("ggplot2")
+library(Hmisc); tellme("Hmisc")
+library(ggrepel); tellme("ggrepel")
+
+library(scales)
+```
+
+```{r}
+# much of this is taken from
+# http://www.sthda.com/english/wiki/ggplot2-quick-correlation-matrix-heatmap-r-software-and-data-visualization
+
+#functions
+tidyMelt <- function(cormat, values_name="values"){
+    cormat.new = cormat %>% data.frame() 
+    cormat.new$var1 = row.names(cormat.new)
+    melted_cormat = cormat.new %>% pivot_longer(cols=-var1, names_to = "var2", values_to = values_name)
+    return(melted_cormat)
+}
+
+make_heatmap_1 <- function(cor.co2){
+    ggplot(data = cor.co2, aes(x=var1, y=var2, fill=cor)) + 
+        geom_tile(color = "white")+
+        scale_fill_gradient2(low = "blue", high = "red", mid = "white", 
+                             midpoint = 0, limit = c(-1,1), space = "Lab", 
+                             name="Correlation",
+                             na.value = gray(.9)) +
+        theme_minimal()+ # minimal theme
+        xlab("") +
+        ylab("") +
+        theme(axis.text.x = element_text(angle = 90, vjust = .5,
+                                         size = 8, hjust = 1)) +
+        coord_fixed()
+}
+```
+
+
+```{r}
+outDir="../output"
+dir.create(outDir)
+```
+
+Set color constants for the year.
+```{r}
+# based on ggplot defaults
+yearColors = c('2021'="#00BA38", '2022'="#F8766D", '2023'="#619CFF")
+yearPch = c('2021'=15, '2022'=16, '2023'=17)
+```
+
+
+
+# Intro
+
+Note on methods:
+AggieV4 hall and Barbee.
+grab sampling -- all non-AS samples
+compound sampling --> AS auto-sampling
+
+## PMMoV by dorm
+
+
+
+```{r}
+pmmD.2022 = read.delim("../../input/from_ncat/PMMoV/PMMoV_2022_by-dorm_2024-07-08.txt")
+pmmD.2023 = read.delim("../../input/from_ncat/PMMoV/PMMoV_2023_by-dorm_2024-07-08.txt")
+
+# only 2022 has data for Aggie.V6, and only a few dates; drop the Aggie.V6 columns.
+iNames = intersect(names(pmmD.2022), names(pmmD.2023))
+
+pmmD = rbind(pmmD.2022[,iNames], pmmD.2023[,iNames]) %>%
+    gather(key="dorm.rep", value="PMMoV", -date) %>%
+    mutate(date = mdy(date, tz="")) %>%
+    mutate(dorm=sub(x=dorm.rep, pattern=".rep[123]",replacement="")) %>%
+    mutate(replicate=gsub(x=dorm.rep, pattern="[^?]*rep", replacement="rep")) %>%
+    select(date, PMMoV, dorm, replicate) %>%
+    spread(key=replicate, value=PMMoV) 
+
+head(pmmD, 3)
+```
+
+```{r}
+pmmD$mean = apply(pmmD[,c("rep1", "rep2", "rep3")], MARGIN = 1, FUN=mean)
+pmmD$median = apply(pmmD[,c("rep1", "rep2", "rep3")], MARGIN = 1, FUN=median)
+pmmD$sd = apply(pmmD[,c("rep1", "rep2", "rep3")], MARGIN = 1, FUN=sd)
+head(pmmD, 3)
+```
+
+A little sanity check... does rep1 predict rep2 (and other pairings?).  It looks like once in a while one rep is very different.  Insead of averaging this in, we could take the median value across the three replicates.  This probably gives us a pretty similar value...right?
+
+```{r}
+ggplot(pmmD, aes(x=rep1, y=rep2)) +
+    scale_y_log10() +
+    scale_x_log10() +
+    geom_abline(slope=1, col="gray") +
+    geom_point()
+ggplot(pmmD, aes(x=rep3, y=rep2)) +
+    scale_y_log10() +
+    scale_x_log10() +
+    geom_abline(slope=1, col="gray") +
+    geom_point()
+ggplot(pmmD, aes(x=rep1, y=rep3)) +
+    scale_y_log10() +
+    scale_x_log10() +
+    geom_abline(slope=1, col="gray") +
+    geom_point()
+
+ggplot(pmmD, aes(x=mean, y=median)) +
+    scale_y_log10() +
+    scale_x_log10() +
+    geom_abline(slope=1, col="gray") +
+    geom_point()
+```
+
+As expected, replicates have very similar values and taking either the median or the mean should give us very similar results.
+
+
+Compare this to the per-dorm RNA copies for SARS-CoV-2.
+
+```{r}
+pmmD = pmmD %>% 
+    mutate(PMMoV = median) %>%
+    select(date, dorm, PMMoV) %>%
+    spread(key=dorm, value=PMMoV)
+
+methodDorms = c("Aggie.V4", "Aggie.V4.AS", "Barbee", "Barbee.AS")
+pmmD_methods = pmmD %>% select(Aggie.V4, Aggie.V4.AS, Barbee, Barbee.AS)
+```
+
+
+
+## SARS by dorm
+
+
+
+```{r}
+rna.wide = read.delim("../../input/from_ncat/SARS-CoV-2_RNA-copies/RNA_copies_2021-2023.txt") %>%
+    mutate(date = mdy(date, tz="")) 
+rna = rna.wide %>% 
+    gather(key=dorm, value=RNA.copies, Aggie.V4:Aggie.V6) %>%
+    filter(!is.na(RNA.copies))
+rna.wide = spread(rna, key=dorm, value=RNA.copies) #new values are numeric
+head(rna)
+```
+
+```{r}
+rna.wide.stringy = rna.wide %>% 
+    mutate(day = day(date)) %>%
+    mutate(month = month(date, label=T)) %>%
+    mutate(year = as.character(year(date))) %>%
+    mutate(dateString=paste(day, month, year, sep="-"))
+```
+
+```{r}
+plotASvsGrab <- function(data, AScolumn, GrabColumn, name, subtitle="RNA copies per liter",
+                         imageFileName=paste0("../output/sampleMethod_", name, ".pdf")){
+    fdata = data.frame(ASvalues=data[,AScolumn],
+                       GrabValues=data[,GrabColumn],
+                       dateString=data[,"dateString"],
+                       year=data[,"year"])
+    
+    corTest = cor.test(x=fdata$GrabValues, y=fdata$ASvalues, use="complete", method="spearman")
+    testN = sum(!is.na(fdata$GrabValues) & !is.na(fdata$ASvalues))
+    
+    ggplot(fdata, 
+           aes(x=GrabValues, y=ASvalues, label=dateString, col=year, pch=year)) +
+        scale_y_log10() +
+        scale_x_log10() +
+        scale_color_manual(values=yearColors) +
+        scale_shape_manual(values=yearPch) +
+        xlab("Grab Sampling") +
+        ylab("Auto Sampling") +
+        ggtitle(paste(name, "- comparative sampleing methods"), sub=subtitle) +
+        geom_abline(slope=1, intercept = 0, alpha=.2) +
+        geom_point() +
+        geom_text_repel(show.legend = F) +
+        labs(caption = paste0("Spearmans rho: ", round(corTest$estimate, 3), 
+                              "\n", "p-value: ", corTest$p.value, "; -log10(p): ", -log10(corTest$p.value),
+                              "\n", "Gray line is unity (x=y).", 
+                              "\n", "N=", testN)) +
+        theme_classic()
+    ggsave(imageFileName)
+    return(list(corTest=corTest,
+                testN=testN,
+                plot=last_plot()))
+}
+```
+
+```{r}
+results.aggieV4.raw = plotASvsGrab(data=rna.wide.stringy, AScolumn="Aggie.V4", GrabColumn="Aggie.V4.AS", name="Aggie V4")
+results.barbee.raw = plotASvsGrab(data=rna.wide.stringy, AScolumn="Barbee", GrabColumn="Barbee.AS", name="Barbee")
+
+results.aggieV4.raw$plot
+results.barbee.raw$plot
+```
+
+
+# normed by pmm
+
+```{r}
+methodDorms = c("Aggie.V4", "Aggie.V4.AS", "Barbee", "Barbee.AS")
+
+rna.wide.stringy.normed = rna.wide.stringy
+
+for (dormM in methodDorms){
+    pmmDormM = pmmD[, c("date", dormM)]
+    names(pmmDormM) = c("date", "PMMoV")
+    
+    miniStringy = rna.wide.stringy[, c("date", dormM)]
+    m = merge(pmmDormM, miniStringy)
+    m$normed = log10(m[,dormM]) / log10(m[,"PMMoV"])
+    m2 = m[,c("date", "normed")]
+    names(m2)[2] = paste0(dormM, "_normed")
+    
+    rna.wide.stringy.normed = merge(rna.wide.stringy.normed, m2, by="date", all = T)
+}
+```
+
+```{r}
+results.aggieV4.normed = plotASvsGrab(data=rna.wide.stringy.normed, AScolumn="Aggie.V4_normed", GrabColumn="Aggie.V4.AS_normed", 
+                                      name="Aggie V4 by PMMoV", subtitle = "RNA copoies per liter / PMMoV copies per liter")
+results.barbee.normed = plotASvsGrab(data=rna.wide.stringy.normed, AScolumn="Barbee_normed", GrabColumn="Barbee.AS_normed", 
+                                     name="Barbee by PMMoV", subtitle = "RNA copoies per liter / PMMoV copies per liter")
+
+results.aggieV4.normed$plot
+results.barbee.normed$plot
+```
+
+# conclusion
+
+For Aggie V4, The sample size went from `r results.aggieV4.raw$testN` to `r results.aggieV4.normed$testN`; and the rho when from `r results.aggieV4.raw$corTest$estimate` to `r results.aggieV4.normed$corTest$estimate`
+
+For Barbee, The sample size went from `r results.barbee.raw$testN` to `r results.barbee.normed$testN`; and the rho when from `r results.barbee.raw$corTest$estimate` to `r results.barbee.normed$corTest$estimate`
+
+
+# done
+
+```{r}
+sessionInfo()
+```
+
+

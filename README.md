@@ -18,8 +18,7 @@ Figure 4b:  02_SARS-in-wastewater/output/campus-wide-cc_vs_max-rna-copies.pdf
 Figure 5a:  02_SARS-in-wastewater/output/PMMoV-vs-SARS_by-sample_withLegend.png
 Figure 5b:  04_campus-wide-cases/output/SARS-to-PMMoV-ratio_vs_campus-clinical-cases.pdf
 
-Figure 6a-left:  03_Dorms-and-methods/output/sampleMethod_AggieV4.pdf
-Figure 6a-right:  03_Dorms-and-methods/output/sampleMethod_Barbee.pdf
-Figure 6b-left:  
-Figure 6b-right:
-
+Figure 6a-left:  05_PMMoV-in-AS-vs-Grab/output/sampleMethod_Aggie V4.pdf
+Figure 6a-right:  05_PMMoV-in-AS-vs-Grab/output/sampleMethod_Barbee.pdf
+Figure 6b-left:  05_PMMoV-in-AS-vs-Grab/output/sampleMethod_Aggie V4 by PMMoV.pdf
+Figure 6b-right:  05_PMMoV-in-AS-vs-Grab/output/sampleMethod_Barbee by PMMoV.pdf
