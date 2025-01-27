@@ -1,0 +1,442 @@
+---
+title: "Campus-wide-cases"
+output: html_document
+date: "2024-09-06"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Setup
+
+Libraries.
+```{r}
+R.Version()$version.string
+tellme <- function(name){message("Package ", name, " version: ", packageVersion(name))}
+library(lubridate); tellme("lubridate")
+library(dplyr); tellme("dplyr")
+library(tidyr); tellme("tidyr")
+library(ggplot2); tellme("ggplot2")
+library(Hmisc); tellme("Hmisc")
+library(ggrepel); tellme("ggrepel")
+
+library(scales)
+```
+
+
+### color constants
+
+
+Some data is given by dorm.  Set some color constants for the dorm buildings.
+```{r}
+dormColors = c(Aggie.V4="#6A3D9A",
+               Aggie.V4.AS="#CAB2D6",
+               Aggie.V1="gold4",
+               Aggie.V3="gray20",
+               Aggie.VE="#B15928",
+               Aggie.V6="#FF7F00",
+               Barbee="#33A02C",
+               Barbee.AS="#B2DF8A",
+               Morrow="#FB9A99",
+               Holland="#FDBF6F",
+               Haley="#E31A1C",
+               Cooper="#1F78B4",
+               Pride="#A6CEE3")
+```
+
+Set color constants for spring and fall terms.
+```{r}
+termSeasonPalette=c(fall="gold", spring="darkolivegreen3")
+```
+
+Set color constants for the year.
+```{r}
+# based on ggplot defaults
+yearColors = c('2021'="#F8766D", '2022'="#00BA38", '2023'="#619CFF")
+```
+
+
+Set other color constants.
+```{r}
+sarsColor = "coral"
+pmmColor = "dodgerblue"
+ratioColor = "pink"
+rnaTypeColorPalette = c(sarsColor = "coral", pmmColor="dodgerblue", ratioColor="pink")
+```
+
+Output
+```{r}
+outDir="../output"
+if (!dir.exists(outDir)) dir.create(outDir)
+```
+
+
+## Clinical Cases
+
+Read the number of cases per month.  Parse dates as date objects.  The parsed dates will be given as the day at the end of the month, because I assume that is the reporting time for the month as a whole. However, the plotting package (ggplot2) seems to want to draw the January line at January first.
+
+```{r}
+cc = read.delim("../../input/from_ncat/campus_clinical-cases/clinical_cases_2021-2023.txt") %>% 
+    select(month, clinical.cases) %>% 
+    filter(!is.na(month)) %>% 
+    filter(!is.na(clinical.cases)) 
+cc$time.month.start = floor_date(dmy(paste0("15-", cc$month), tz=""), unit = "month") %>% as.POSIXct()
+cc$time.month.end = ceiling_date(dmy(paste0("15-", cc$month), tz=""), unit = "month") %>% as.POSIXct()
+head(cc,3)
+```
+
+This is a table of ``r nrow(cc)`` rows, with dates ranging from ``r min(cc$time.month)`` to ``r max(cc$time.month)``.
+
+
+
+
+
+
+
+
+
+## RNA copies
+
+
+```{r}
+rna.wide = read.delim("../../input/from_ncat//SARS-CoV-2_RNA-copies/RNA_copies_2021-2023.txt") %>%
+    mutate(date = mdy(date, tz="")) 
+rna = rna.wide %>% 
+    gather(key=dorm, value=RNA.copies, Aggie.V4:Aggie.V6) %>%
+    filter(!is.na(RNA.copies))
+rna.wide = spread(rna, key=dorm, value=RNA.copies) #new values are numeric
+head(rna)
+```
+
+This is a table of ``r nrow(rna.wide)`` rows, with dates ranging from ``r min(rna$date)`` to ``r max(rna$date)``.
+
+
+
+
+## PMMoV by dorm
+
+I wonder if our total lack of corralation between PMMoV and SARS may actually be because we have collapsed the data by across unrelated samples.  So I asked Shilpi for the per-drom data.
+
+```{r}
+pmmD.2022 = read.delim("../../input/from_ncat/PMMoV/PMMoV_2022_by-dorm_2024-07-08.txt")
+pmmD.2023 = read.delim("../../input/from_ncat/PMMoV/PMMoV_2023_by-dorm_2024-07-08.txt")
+
+# only 2022 has data for Aggie.V6, and only a few dates; drop the Aggie.V6 columns.
+iNames = intersect(names(pmmD.2022), names(pmmD.2023))
+
+pmmD = rbind(pmmD.2022[,iNames], pmmD.2023[,iNames]) %>%
+    gather(key="dorm.rep", value="PMMoV", -date) %>%
+    mutate(date = mdy(date, tz="")) %>%
+    mutate(dorm=sub(x=dorm.rep, pattern=".rep[123]",replacement="")) %>%
+    mutate(replicate=gsub(x=dorm.rep, pattern="[^?]*rep", replacement="rep")) %>%
+    select(date, PMMoV, dorm, replicate) %>%
+    spread(key=replicate, value=PMMoV) 
+
+head(pmmD, 3)
+```
+
+```{r}
+pmmD$mean = apply(pmmD[,c("rep1", "rep2", "rep3")], MARGIN = 1, FUN=mean)
+pmmD$median = apply(pmmD[,c("rep1", "rep2", "rep3")], MARGIN = 1, FUN=median)
+pmmD$sd = apply(pmmD[,c("rep1", "rep2", "rep3")], MARGIN = 1, FUN=sd)
+head(pmmD, 3)
+```
+
+A little sanity check... does rep1 predict rep2 (and other pairings?).  It looks like once in a while one rep is very different.  Insead of averaging this in, we could take the median value across the three replicates.  This probably gives us a pretty similar value...right?
+
+```{r}
+ggplot(pmmD, aes(x=rep1, y=rep2)) +
+    scale_y_log10() +
+    scale_x_log10() +
+    geom_abline(slope=1, col="gray") +
+    geom_point()
+ggplot(pmmD, aes(x=rep3, y=rep2)) +
+    scale_y_log10() +
+    scale_x_log10() +
+    geom_abline(slope=1, col="gray") +
+    geom_point()
+ggplot(pmmD, aes(x=rep1, y=rep3)) +
+    scale_y_log10() +
+    scale_x_log10() +
+    geom_abline(slope=1, col="gray") +
+    geom_point()
+
+ggplot(pmmD, aes(x=mean, y=median)) +
+    scale_y_log10() +
+    scale_x_log10() +
+    geom_abline(slope=1, col="gray") +
+    geom_point()
+```
+
+As expected, replicates have very similar values and taking either the median or the mean should give us very similar results.
+
+
+Compare this to the per-dorm RNA copies for SARS-CoV-2.
+
+```{r}
+pmmD = pmmD %>% mutate(PMMoV = median) 
+```
+
+
+
+
+
+
+
+
+
+
+
+
+### PMMoV vs SARS per dorm 
+
+merge and normalize by pmm
+
+```{r}
+pmm.merged = merge(x=rna %>% rename(SARS=RNA.copies),
+                   y=pmmD %>% select(date, dorm, PMMoV)) %>%
+    mutate(SARSperPMM.ratio = SARS / PMMoV) %>%
+    mutate(SARSperPMM.logRatio = log10(SARS) / log10(PMMoV)) %>%
+    mutate(month = round_date(date, "month"))
+head(pmm.merged,3)
+```
+
+```{r}
+pmm.merged.summary = pmm.merged %>%
+    group_by(month) %>%
+    summarise(mean.logRatio=mean(SARSperPMM.logRatio, na.rm=T), 
+              mean.ratio=mean(SARSperPMM.ratio, na.rm=T), 
+              # max.RNA.copies=max(RNA.copies), 
+              # median.RNA.copies=median(RNA.copies), 
+              # min.RNA.copies=min(RNA.copies), 
+              n.vals=n()) %>%
+    mutate(year=as.factor(lubridate::year(month)))
+head(pmm.merged.summary)
+```
+
+
+
+### Campus case counts vs RNA.copies
+
+Get RNA copies per month across the 3-year period
+```{r}
+rna.wide.month = rna.wide %>% mutate(month=round_date(date, unit="month"))
+
+rna.long.month = rna.wide.month %>% 
+    select(-date) %>% 
+    gather(key=dorm, value=RNA.copies, -month) %>%
+    filter(!is.na(RNA.copies)) %>%
+    group_by(month) %>%
+    summarise(mean.RNA.copies=mean(RNA.copies), 
+              meanLog.RNA.copies=mean(log10(RNA.copies)), 
+              max.RNA.copies=max(RNA.copies), 
+              median.RNA.copies=median(RNA.copies), 
+              min.RNA.copies=min(RNA.copies), 
+              n.RNA.copies.vals=n()) %>%
+    mutate(year=as.factor(lubridate::year(month)))
+
+ggplot(rna.long.month, aes(x=mean.RNA.copies, y=max.RNA.copies, size=n.RNA.copies.vals, color=year)) +
+    geom_point(alpha=.5) +
+    scale_x_log10() +
+    scale_y_log10() +
+    ggtitle("Summary metrics across dorms, across weeks within a month")
+ggplot(rna.long.month, aes(x=mean.RNA.copies, y=median.RNA.copies, size=n.RNA.copies.vals, color=year)) +
+    geom_point(alpha=.5) +
+    scale_x_log10() +
+    scale_y_log10() +
+    ggtitle("Summary metrics across dorms, across weeks within a month")
+ggplot(rna.long.month, aes(x=min.RNA.copies, y=median.RNA.copies, size=n.RNA.copies.vals, color=year)) +
+    geom_point(alpha=.5) +
+    scale_x_log10() +
+    scale_y_log10() +
+    ggtitle("Summary metrics across dorms, across weeks within a month")
+
+ggplot(rna.long.month, aes(x=mean.RNA.copies, y=meanLog.RNA.copies, size=n.RNA.copies.vals, color=year)) +
+    geom_point(alpha=.5) +
+    scale_x_log10() +
+    scale_y_log10() +
+    ggtitle("Summary metrics across dorms, across weeks within a month")
+ggplot(rna.long.month, aes(x=max.RNA.copies, y=meanLog.RNA.copies, size=n.RNA.copies.vals, color=year)) +
+    geom_point(alpha=.5) +
+    scale_x_log10() +
+    scale_y_log10() +
+    ggtitle("Summary metrics across dorms, across weeks within a month")
+
+```
+
+Merge in campus case counts by month, across the three year period.
+```{r}
+cc.month = cc %>% select(-month) %>% rename(month = time.month.start)
+campus.cc.rna = merge(cc.month, 
+                      rna.long.month, by="month")
+head(campus.cc.rna)
+```
+
+```{r}
+rm(ct)
+ct=cor.test(x=campus.cc.rna$mean.RNA.copies, y=campus.cc.rna$clinical.cases, use="complete", method="spearman")
+ggplot(data=campus.cc.rna, aes(x=mean.RNA.copies, y=clinical.cases, color=year)) +
+    geom_point() +
+    scale_x_log10() +
+    ggtitle("NCA&T campus wide values") +
+    labs(caption=paste0("Spearmans rho: ", round(ct$estimate, 3),
+                        "\nCor test p-value: ", round(ct$p.value, 3),
+                        "\nN: ", nrow(campus.cc.rna))) +
+    theme_minimal()
+
+rm(ct)
+ct=cor.test(x=campus.cc.rna$median.RNA.copies, y=campus.cc.rna$clinical.cases, use="complete", method="spearman")
+campus.wide.rna.mean.plot = ggplot(data=campus.cc.rna, aes(x=median.RNA.copies, y=clinical.cases, color=year)) +
+    geom_point() +
+    scale_x_log10() +
+    ggtitle("NCA&T campus wide values") +
+    labs(caption=paste0("Spearmans rho: ", round(ct$estimate, 3),
+                        "\nCor test p-value: ", round(ct$p.value, 3),
+                        "\nN: ", nrow(campus.cc.rna))) +
+    theme_minimal()
+campus.wide.rna.mean.plot
+
+rm(ct)
+ct=cor.test(x=campus.cc.rna$max.RNA.copies, y=campus.cc.rna$clinical.cases, use="complete", method="spearman")
+ggplot(data=campus.cc.rna, aes(x=max.RNA.copies, y=clinical.cases, color=year)) +
+    geom_point() +
+    scale_x_log10() +
+    ggtitle("NCA&T campus wide values") +
+    labs(caption=paste0("Spearmans rho: ", round(ct$estimate, 3),
+                        "\nCor test p-value: ", round(ct$p.value, 3),
+                        "\nN: ", nrow(campus.cc.rna))) +
+    theme_minimal()
+
+rm(ct)
+ct=cor.test(x=campus.cc.rna$meanLog.RNA.copies, y=campus.cc.rna$clinical.cases, use="complete", method="spearman")
+ggplot(data=campus.cc.rna, aes(x=meanLog.RNA.copies, y=clinical.cases, color=year)) +
+    geom_point() +
+    scale_x_log10() +
+    ggtitle("NCA&T campus wide values") +
+    labs(caption=paste0("Spearmans rho: ", round(ct$estimate, 3),
+                        "\nCor test p-value: ", round(ct$p.value, 3),
+                        "\nN: ", nrow(campus.cc.rna))) +
+    theme_minimal()
+```
+
+Using the mean values, put data on a log scale.
+```{r}
+ggplot(data=campus.cc.rna, aes(x=median.RNA.copies, y=clinical.cases, color=year)) +
+    geom_point() +
+    scale_x_log10() +
+    ggtitle("NCA&T campus wide values", subtitle = "x on log10") +
+    labs(caption=paste0("Spearmans rho: ", round(ct$estimate, 3),
+                        "\nCor test p-value: ", round(ct$p.value, 3),
+                        "\nN: ", nrow(campus.cc.rna))) +
+    theme_minimal()
+
+ggplot(data=campus.cc.rna, aes(x=median.RNA.copies, y=clinical.cases, color=year)) +
+    geom_point() +
+    ggtitle("NCA&T campus wide values", subtitle = "no log scale") +
+    labs(caption=paste0("Spearmans rho: ", round(ct$estimate, 3),
+                        "\nCor test p-value: ", round(ct$p.value, 3),
+                        "\nN: ", nrow(campus.cc.rna))) +
+    theme_minimal()
+
+ggplot(data=campus.cc.rna, aes(x=median.RNA.copies, y=clinical.cases, color=year)) +
+    geom_point() +
+    scale_x_log10() +
+    scale_y_log10() +
+    ggtitle("NCA&T campus wide values", subtitle = "x and y log10") +
+    labs(caption=paste0("Spearmans rho: ", round(ct$estimate, 3),
+                        "\nCor test p-value: ", round(ct$p.value, 3),
+                        "\nN: ", nrow(campus.cc.rna))) +
+    theme_minimal()
+```
+Only include the 22 and 23 data
+```{r}
+campus.cc.rna.2223 = campus.cc.rna %>% filter(year == "2022" | year == "2023")
+ct2223=cor.test(x=campus.cc.rna.2223$median.RNA.copies, y=campus.cc.rna.2223$clinical.cases, use="complete", method="spearman")
+
+
+ggplot(data=campus.cc.rna.2223, 
+       aes(x=median.RNA.copies, y=clinical.cases, color=year)) +
+    geom_point() +
+    scale_x_log10() +
+    ggtitle("NCA&T campus wide values", subtitle = "x on log10") +
+    labs(caption=paste0("Spearmans rho: ", round(ct2223$estimate, 3),
+                        "\nCor test p-value: ", round(ct2223$p.value, 3),
+                        "\nN: ", nrow(campus.cc.rna))) +
+    theme_minimal()
+
+ggplot(data=campus.cc.rna.2223, 
+       aes(x=median.RNA.copies, y=clinical.cases, color=year)) +
+    geom_point() +
+    scale_x_log10() +
+    scale_y_log10() +
+    ggtitle("NCA&T campus wide values", subtitle = "x and y log10") +
+    labs(caption=paste0("Spearmans rho: ", round(ct2223$estimate, 3),
+                        "\nCor test p-value: ", round(ct2223$p.value, 3),
+                        "\nN: ", nrow(campus.cc.rna))) +
+    theme_minimal()
+```
+# PMMoV
+
+```{r}
+# pmm = read.delim("../../input/from_ncat/PMMoV/PMMoV_SARS_2022-2023.txt") %>%
+#     select(date, SARS.CoV.2.means, PMMoV.means, ratio.SARStoPMMoV) %>%
+#     mutate(date = mdy(date, tz="")) %>%
+#     mutate(logRatioS2P = log10(SARS.CoV.2.means) / log10(PMMoV.means))
+# head(pmm, 3)
+```
+
+
+## by pmmov
+
+```{r}
+head(pmm.merged.summary)
+
+campus.cc.pmm = merge(cc.month, 
+                      pmm.merged.summary, by="month")
+head(campus.cc.pmm)
+```
+
+```{r}
+rm(ct)
+ct=cor.test(x=campus.cc.pmm$mean.logRatio, y=campus.cc.pmm$clinical.cases, use="complete", method="spearman")
+
+ggplot(data=campus.cc.pmm, aes(x=mean.logRatio, y=clinical.cases, color=year)) +
+    geom_point() +
+    scale_x_log10() +
+    ggtitle("NCA&T campus wide values") +
+    labs(caption=paste0("Spearmans rho: ", round(ct$estimate, 3),
+                        "\nCor test p-value: ", round(ct$p.value, 3),
+                        "\nN: ", nrow(campus.cc.rna))) +
+    theme_minimal()
+ggsave("../output/SARS-to-PMMoV-ratio_vs_campus-clinical-cases.pdf")
+
+last_plot() + scale_y_log10()
+
+
+
+rm(ct)
+ct=cor.test(x=campus.cc.pmm$mean.ratio, y=campus.cc.pmm$clinical.cases, use="complete", method="spearman")
+
+ggplot(data=campus.cc.pmm, aes(x=mean.ratio, y=clinical.cases, color=year)) +
+    geom_point() +
+    scale_x_log10() +
+    ggtitle("NCA&T campus wide values") +
+    labs(caption=paste0("Spearmans rho: ", round(ct$estimate, 3),
+                        "\nCor test p-value: ", round(ct$p.value, 3),
+                        "\nN: ", nrow(campus.cc.rna))) +
+    theme_minimal()
+
+last_plot() + scale_y_log10()
+```
+
+
+
+
+```{r}
+sessionInfo()
+```
+
+
+
+

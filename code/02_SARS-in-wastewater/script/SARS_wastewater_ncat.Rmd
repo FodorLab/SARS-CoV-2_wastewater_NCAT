@@ -1101,6 +1101,7 @@ ggplot(data=campus.cc.rna, aes(x=max.RNA.copies, y=clinical.cases, color=year)) 
                         "\nCor test p-value: ", round(ct$p.value, 3),
                         "\nN: ", nrow(campus.cc.rna))) +
     theme_minimal()
+ggsave("../output/campus-wide-cc_vs_max-rna-copies.pdf")
 
 rm(ct)
 ct=cor.test(x=campus.cc.rna$meanLog.RNA.copies, y=campus.cc.rna$clinical.cases, use="complete", method="spearman")
