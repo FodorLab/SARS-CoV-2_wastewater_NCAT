@@ -126,7 +126,7 @@ ggplot(rna.wide.stringy,
                           "\n", "Gray line is unity (x=y).", 
                           "\n", "N=", aV4testN)) +
     theme_classic()
-ggsave("../output/sampleMethod_AggieV4.pdf", width = 7, height = 7)
+ggsave("../output/sampleMethod_AggieV4.png", width = 7, height = 7)
 ```
 
 Plot Barbee values.
@@ -152,7 +152,7 @@ ggplot(rna.wide.stringy,
                           "\n", "N=", barbeeTestN)) +
     theme_classic()
 
-ggsave("../output/sampleMethod_Barbee.pdf", width = 7, height = 7)
+ggsave("../output/sampleMethod_Barbee.png", width = 7, height = 7)
 ```
 
 
@@ -184,7 +184,7 @@ corList.spearman$r %>% tidyMelt(values="cor") %>% make_heatmap_1() +
                              midpoint = .8, limit = c(0,0.9999), space = "Lab",
                              na.value = "gray30") +
     ggtitle("Spearman Correlation Coefficient")
-ggsave("../output/dorm-ww-cor-matrix_rho.pdf")
+ggsave("../output/dorm-ww-cor-matrix_rho.png")
 write.my.table(corList.spearman$r, "../output/dorm-ww-cor-matrix_rho.txt")
 
 negLogPvals = -log10(corList.spearman$P)
@@ -194,7 +194,7 @@ negLogPvals %>% tidyMelt(values="cor") %>% make_heatmap_1() +
                              name="-log10(p)",
                              na.value = "gray30") +
     ggtitle("Spearman - p-values")
-ggsave("../output/dorm-ww-cor-matrix_p.pdf")
+ggsave("../output/dorm-ww-cor-matrix_p.png")
 write.my.table(corList.spearman$r, "../output/dorm-ww-cor-matrix_p.txt")
 
 corList.spearman$n %>% tidyMelt(values="cor") %>% make_heatmap_1() +
@@ -203,7 +203,7 @@ corList.spearman$n %>% tidyMelt(values="cor") %>% make_heatmap_1() +
                              name="N",
                              na.value = "gray30") +
     ggtitle("Number pairwise complete observations")
-ggsave("../output/dorm-ww-cor-matrix_n.pdf")
+ggsave("../output/dorm-ww-cor-matrix_n.png")
 write.my.table(corList.spearman$r, "../output/dorm-ww-cor-matrix_n.txt")
 ```
 
@@ -244,8 +244,13 @@ hist(corLong$cor, breaks=40, col="lightblue", las=1, xlim=c(0,1), main="between 
 ```
 
 ```{r}
-pdf("../output/between-dorm-correlations.pdf", width = 5, height = 4)
+# pdf("../output/between-dorm-correlations.pdf", width = 5, height = 4)
+png("../output/between-dorm-correlations.png", width = 5, height = 4, units = "in", res=200)
 hist(corLong$cor, breaks=40, col="lightblue", las=1, xlim=c(0,1), main="between dorm correlations", xlab="Spearmans Rho")
+
+dev.off()
+
+png("../output/between-dorm-correlations_with-annotation.png", width = 5, height = 4, units = "in", res=200)
 
 hist(corLong$cor, breaks=40, col="lightblue", las=1, xlim=c(0,1), main="between dorm correlations", xlab="Spearmans Rho")
 abline(v=barbeeTest$estimate, lwd=3)

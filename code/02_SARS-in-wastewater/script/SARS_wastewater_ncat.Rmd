@@ -1071,8 +1071,10 @@ head(campus.cc.rna)
 ```{r}
 rm(ct)
 ct=cor.test(x=campus.cc.rna$mean.RNA.copies, y=campus.cc.rna$clinical.cases, use="complete", method="spearman")
-ggplot(data=campus.cc.rna, aes(x=mean.RNA.copies, y=clinical.cases, color=year)) +
+ggplot(data=campus.cc.rna, aes(x=mean.RNA.copies, y=clinical.cases, color=year, pch=year)) +
     geom_point() +
+    scale_color_manual(values=yearColors) +
+    scale_shape_manual(values=yearPch) +
     scale_x_log10() +
     ggtitle("NCA&T campus wide values") +
     labs(caption=paste0("Spearmans rho: ", round(ct$estimate, 3),
@@ -1082,8 +1084,10 @@ ggplot(data=campus.cc.rna, aes(x=mean.RNA.copies, y=clinical.cases, color=year))
 
 rm(ct)
 ct=cor.test(x=campus.cc.rna$median.RNA.copies, y=campus.cc.rna$clinical.cases, use="complete", method="spearman")
-ggplot(data=campus.cc.rna, aes(x=median.RNA.copies, y=clinical.cases, color=year)) +
+ggplot(data=campus.cc.rna, aes(x=median.RNA.copies, y=clinical.cases, color=year, pch=year)) +
     geom_point() +
+    scale_color_manual(values=yearColors) +
+    scale_shape_manual(values=yearPch) +
     scale_x_log10() +
     ggtitle("NCA&T campus wide values") +
     labs(caption=paste0("Spearmans rho: ", round(ct$estimate, 3),
@@ -1093,20 +1097,24 @@ ggplot(data=campus.cc.rna, aes(x=median.RNA.copies, y=clinical.cases, color=year
 
 rm(ct)
 ct=cor.test(x=campus.cc.rna$max.RNA.copies, y=campus.cc.rna$clinical.cases, use="complete", method="spearman")
-ggplot(data=campus.cc.rna, aes(x=max.RNA.copies, y=clinical.cases, color=year)) +
+ggplot(data=campus.cc.rna, aes(x=max.RNA.copies, y=clinical.cases, color=year, pch=year)) +
     geom_point() +
+    scale_color_manual(values=yearColors) +
+    scale_shape_manual(values=yearPch) +
     scale_x_log10() +
     ggtitle("NCA&T campus wide values") +
     labs(caption=paste0("Spearmans rho: ", round(ct$estimate, 3),
                         "\nCor test p-value: ", round(ct$p.value, 3),
                         "\nN: ", nrow(campus.cc.rna))) +
     theme_minimal()
-ggsave("../output/campus-wide-cc_vs_max-rna-copies.pdf")
+ggsave("../output/campus-wide-cc_vs_max-rna-copies.png")
 
 rm(ct)
 ct=cor.test(x=campus.cc.rna$meanLog.RNA.copies, y=campus.cc.rna$clinical.cases, use="complete", method="spearman")
-ggplot(data=campus.cc.rna, aes(x=meanLog.RNA.copies, y=clinical.cases, color=year)) +
+ggplot(data=campus.cc.rna, aes(x=meanLog.RNA.copies, y=clinical.cases, color=year, pch=year)) +
     geom_point() +
+    scale_color_manual(values=yearColors) +
+    scale_shape_manual(values=yearPch) +
     scale_x_log10() +
     ggtitle("NCA&T campus wide values") +
     labs(caption=paste0("Spearmans rho: ", round(ct$estimate, 3),

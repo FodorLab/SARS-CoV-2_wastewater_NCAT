@@ -176,7 +176,7 @@ rna.wide.stringy = rna.wide %>%
 
 ```{r}
 plotASvsGrab <- function(data, AScolumn, GrabColumn, name, subtitle="RNA copies per liter",
-                         imageFileName=paste0("../output/sampleMethod_", name, ".pdf")){
+                         imageFileName=paste0("../output/sampleMethod_", name, ".png")){
     fdata = data.frame(ASvalues=data[,AScolumn],
                        GrabValues=data[,GrabColumn],
                        dateString=data[,"dateString"],
