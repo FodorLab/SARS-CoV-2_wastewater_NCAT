@@ -54,6 +54,7 @@ Set color constants for the year.
 ```{r}
 # based on ggplot defaults
 yearColors = c('2021'="#F8766D", '2022'="#00BA38", '2023'="#619CFF")
+yearPch = c('2021'=15, '2022'=16, '2023'=17)
 ```
 
 
@@ -401,14 +402,17 @@ head(campus.cc.pmm)
 rm(ct)
 ct=cor.test(x=campus.cc.pmm$mean.logRatio, y=campus.cc.pmm$clinical.cases, use="complete", method="spearman")
 
-ggplot(data=campus.cc.pmm, aes(x=mean.logRatio, y=clinical.cases, color=year)) +
+ggplot(data=campus.cc.pmm, aes(x=mean.logRatio, y=clinical.cases, 
+                               color=year, pch=year)) +
     geom_point() +
+    scale_color_manual(values=yearColors) +
+    scale_shape_manual(values=yearPch) +
     scale_x_log10() +
     ggtitle("NCA&T campus wide values") +
     labs(caption=paste0("Spearmans rho: ", round(ct$estimate, 3),
                         "\nCor test p-value: ", round(ct$p.value, 3),
                         "\nN: ", nrow(campus.cc.rna))) +
-    theme_minimal()
+    theme_classic()
 ggsave("../output/SARS-to-PMMoV-ratio_vs_campus-clinical-cases.png")
 
 last_plot() + scale_y_log10()

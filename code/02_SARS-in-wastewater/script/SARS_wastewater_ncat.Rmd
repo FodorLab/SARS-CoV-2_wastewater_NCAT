@@ -179,15 +179,16 @@ head(pmm, 3)
 pmm.vs.sars.cor.test = cor.test(x=pmm$PMMoV.means, y=pmm$SARS.CoV.2.means, method="spearman")
 
 ggplot(pmm %>% mutate(year=as.character(year(date))), 
-       aes(x=PMMoV.means, y=SARS.CoV.2.means, label=date, color=year)) +
+       aes(x=PMMoV.means, y=SARS.CoV.2.means, label=date, color=year, shape=year)) +
     scale_color_manual(values=yearColors) +
+    scale_shape_manual(values=yearPch) +
     scale_x_log10() + 
     scale_y_log10() +
     geom_point() +
     ggtitle("Wastewater RNA Concentration", sub="RNA Copies per Liter") + 
     xlab("PMMoV") +
     ylab("SARS-CoV-2") + 
-    theme_minimal() +
+    theme_classic() +
     labs(caption=paste0("Spearmans rho: ", round(pmm.vs.sars.cor.test$estimate, 3),
                         "\nCor test p-value: ", round(pmm.vs.sars.cor.test$p.value, 3),
                         "\nN: ", nrow(pmm)))
@@ -1106,7 +1107,7 @@ ggplot(data=campus.cc.rna, aes(x=max.RNA.copies, y=clinical.cases, color=year, p
     labs(caption=paste0("Spearmans rho: ", round(ct$estimate, 3),
                         "\nCor test p-value: ", round(ct$p.value, 3),
                         "\nN: ", nrow(campus.cc.rna))) +
-    theme_minimal()
+    theme_classic()
 ggsave("../output/campus-wide-cc_vs_max-rna-copies.png")
 
 rm(ct)
