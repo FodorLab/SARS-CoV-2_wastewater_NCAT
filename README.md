@@ -68,17 +68,17 @@ For a compelling argument in favor of using Code Ocean, check out the 2021 edito
 
 ### BioLockJ
 
-[BioLockJ](https://biolockj-dev-team.github.io/BioLockJ/) is a pipeline manager. In this project, it takes a set of inputs and scripts and generates a new project space with a set structure. 
+[BioLockJ](https://biolockj-dev-team.github.io/BioLockJ/) is a pipeline manager. It takes a set of inputs and scripts and generates a new project space with a set structure. To run the pipeline, use the following command on a system where these files are stored and BioLockJ is installed:
 
-The project structure here matches the structure that BioLockJ creates, so relative file paths that work in a given run of the pipeline also work in this repository directly.  Thus, the `analsys` folder (that is, `code/analysis`) is equivalent to the top level of a pipeline run folder. 
+`biolockj covid_wastewater_NCAT.config`
 
-The run specifications for BioLockJ are given in a BioLockJ config file, `anigma_stress.config`.
+The project structure here matches the structure that BioLockJ creates, so relative file paths that work in a given run of the pipeline also work in this repository directly.  Thus, the `code` folder is equivalent to the top level of a pipeline run folder. 
 
 Note that module folders have numbers but these numbers are arbitrary. It keeps them in an intuitive order, but the numbers are not guaranteed to be the same in a given run.
 
-For any given script, its working directory in a run will be `<pipeline>/<module>/<subdir>` . In a run, that "subdir" is usually the script subdirectory. In the project repository, the subdirectory is called "src". It is an arbitrary name, but the script should be in **a directory one level down from the module directory**. For example: 
+For any given script, its working directory in a run will be `<pipeline>/<module>/<subdir>`; that is **a directory one level down from the module directory**. For example: 
 
- * project file: `code/analysis/03_Dorms-and-methods/src/Dorm-to-dorm-correlations.Rmd`
+ * project file: `code/analysis/03_Dorms-and-methods/script/Dorm-to-dorm-correlations.Rmd`
  * becomes `covid_wastewater_NCAT_<date>/03_Dorms-and-methods/resources/Dorm-to-dorm-correlations.Rmd` in a given BioLockJ run.
 
 BioLockJ can copy any specified input files into the `input` folder for the run.  For any inputs that are stored in git, it is convenient to store them in `analysis/input` to mach the relative files paths of a run.
