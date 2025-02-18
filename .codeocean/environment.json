@@ -4,6 +4,17 @@
 	"post_install": true,
 	"options": {},
 	"installers": {
+		"apt": {
+			"packages": [
+				{
+					"name": "openjdk-8-jdk"
+				},
+				{
+					"name": "pandoc"
+				}
+			],
+			"install_software_properties_common": true
+		},
 		"rcran": {
 			"packages": [
 				{

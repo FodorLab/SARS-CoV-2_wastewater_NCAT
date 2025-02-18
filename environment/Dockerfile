@@ -1,7 +1,13 @@
-# hash:sha256:ae9249de7f720211ab069f75c5d1dde7184bd3fb969b749996d315d26252d581
+# hash:sha256:3eee008f2c690534579483b37624b71a4ae534732e8c5243d1254bb760d4119c
 FROM registry.codeocean.com/codeocean/r-studio:2022.07.0-548-r4.2.1-ubuntu18.04
 
 ARG DEBIAN_FRONTEND=noninteractive
+
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends \
+        openjdk-8-jdk \
+        pandoc \
+    && rm -rf /var/lib/apt/lists/*
 
 RUN Rscript -e 'remotes::install_version("Hmisc", "5.1.3")' \
     && Rscript -e 'remotes::install_version("dplyr", "1.1.4")' \
