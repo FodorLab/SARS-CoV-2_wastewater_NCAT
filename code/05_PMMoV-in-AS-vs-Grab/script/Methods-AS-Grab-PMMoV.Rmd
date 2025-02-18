@@ -27,7 +27,7 @@ library(ggplot2); tellme("ggplot2")
 library(Hmisc); tellme("Hmisc")
 library(ggrepel); tellme("ggrepel")
 
-library(scales)
+# library(scales)
 ```
 
 ```{r}

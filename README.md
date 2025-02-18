@@ -14,7 +14,7 @@ This project is designed to be compatible with specific software: Code Ocean and
 
 This project is designed to work with [Code Ocean](https://codeocean.com/).
 
-See corresponding Code Ocean Capsule ["SARS-CoV-2_wastewater_NCAT"]().
+See corresponding Code Ocean Capsule ["SARS-CoV-2_wastewater_NCAT"](https://codeocean.com/capsule/8844928/tree).
 
 To work with the Code Ocean platform, the top level directories are named to match the 4 "Core Files" folders:
 
@@ -41,13 +41,15 @@ _Note:_ Both Code Ocean and BioLockJ use docker containers.  When running on Cod
 
 To run locally, you will need the following:
 
-R (version 4.3.0 was used)
+R (version 4.4.0 was used)
 
 Most modules require following R packages:
   * tidyr
   * dplyr
   * ggplot2
   * ggrepel
+  * lubridate
+  * Hmisc
 
 Rendering markdowns requires:
   * markdown
