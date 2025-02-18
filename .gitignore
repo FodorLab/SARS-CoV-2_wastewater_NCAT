@@ -1,12 +1,6 @@
 # Ignore any file with "NOT_IN_GIT" in the folder or file name.
 **NOT_IN_GIT**
 
-# Still need to make sure it is ok to store input data in git.
-code/input
-code/input/**
-**/input/**
-**/data/**
-
 # Only select output files should be stored in git.
 **/output/**
 
