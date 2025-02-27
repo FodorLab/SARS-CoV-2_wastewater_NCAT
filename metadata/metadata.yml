@@ -1,2 +1,38 @@
 metadata_version: 1
 name: SARS-CoV-2_wastewater_NCAT
+description: |-
+  This project represents the analysis of the waste water monitoring effort at NCAT. Monitoring focused on the SARS-CoV-2 virus during the years 2021 to 2023.
+
+  Preprint available at: https://www.preprints.org/manuscript/202502.1636
+
+  Abstract:
+  Wastewater surveillance has emerged as a cost-effective and equitable approach for tracking the 7 spread of SARS-CoV-2. In this study, we monitored the prevalence of SARS-CoV-2 on a university campus 8 over three years (2021–2023) using wastewater-based epidemiology (WBE). Wastewater samples were 9
+  collected from 11 manholes on campus, each draining wastewater from a corresponding dormitory building, 10 and viral RNA concentrations were measured using reverse transcription quantitative PCR (RT-qPCR). 11 Weekly clinical case data were also obtained from the university health center. A strong positive and 12 significant correlation was observed between Grab and Composite sampling methods, supporting their 13 robustness as equally effective approaches for sample collection. Specifically, a strong correlation was 14 observed between Aggie Village 4 Grab and Aggie Village 4 Composite samples (R2 = 0.84, p = 0.00) and 15 between Barbee Grab and Barbee Composite samples (R2 = 0.80, p = 0.00). Additionally, higher viral RNA 16 copies of SARS-CoV-2 (N1 gene) were detected during the Spring semester compared to the Fall and Summer 17 semesters. Notably, elevations in raw N1 concentrations were observed shortly after the return of college 18 students to campus, suggesting that these increases were predominantly associated with students returning at 19 the beginning of the Fall and Spring semesters (January and August). To account for variations in fecal 20 loading, SARS-CoV-2 RNA concentrations were normalized using Pepper Mild Mottle Virus (PMMoV), a 21 widely used viral fecal biomarker. However, normalization using PMMoV did not improve correlations 22 between SARS-CoV-2 RNA levels and clinical case data. Despite these findings, our study did not establish 23 WBE as a consistently reliable complement to clinical testing in a university campus setting, contrary to many 24 retrospective studies. One key limitation was that numerous off-campus students did not contribute to the 25 campus wastewater system corresponding to the monitored dormitories. However, some off-campus students 26 were still subjected to clinical testing at the university health center under mandated protocols. Moreover, the 27 university health center discontinued reporting cases per dormitory after 2021, making direct comparisons 28 more challenging. Nevertheless, this study highlights the continued value of WBE as a surveillance tool for 29 monitoring infectious diseases and provides critical insights into its application in campus environments.
+authors:
+- name: 'Shilpi Bhatia '
+  affiliations:
+  - name: NC A&T
+- name: Tinyiko Nicole Maswanganye
+  affiliations:
+  - name: NC A&T
+- name: Danielle Winston
+  affiliations:
+  - name: NC A&T
+- name: Mehdi Lamssali
+  affiliations:
+  - name: NC A&T
+- name: Dongyang Deng
+  affiliations:
+  - name: NC A&T
+- name: Ivory Blakley
+  affiliations:
+  - name: University of North Carolina, Charlotte
+- name: Anthony A Fodor
+  affiliations:
+  - name: University of North Carolina, Charlotte
+- name: Liesl Jeffers-Francis
+  affiliations:
+  - name: NC A&T
+corresponding_contributor:
+  name: Liesl Jeffers-Francis
+  email: ljeffers@ncat.edu
