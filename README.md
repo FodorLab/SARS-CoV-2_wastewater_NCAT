@@ -1,4 +1,4 @@
-# SARS-CoV-2_wastewater_NCAT
+# Evaluating SARS-CoV-2 Surveillance, Sampling Methods, and Seasonal Infection Trends on a University Campus
 
 SARS-CoV-2 Epidemiology & Wastewater Surveillance at North Carolina Agricultural and Technical State University in 2021-2023
 
@@ -87,9 +87,12 @@ For more details about BioLockJ, see the [BioLockJ User Guide](https://biolockj-
 
 ## Publication info
 
-Eventually, this project will be published in a scientific journal.  Details will posted here when they become available.
+Title: "Wastewater Speaks: Evaluating SARS-CoV-2 Surveillance, Sampling Methods, and Seasonal Infection Trends on a University Campus"
 
-Working Title: SARS-CoV-2 Epidemiology & Wastewater Surveillance at North Carolina Agricultural and Technical State University in 2021-2023
 Lead author: Shilpi Bhatia
 
+Preprint posted at https://www.preprints.org/manuscript/202502.1636
+
+Abstract:
+Wastewater surveillance has emerged as a cost-effective and equitable approach for tracking the spread of SARS-CoV-2. In this study, we monitored the prevalence of SARS-CoV-2 on a university campus over three years (2021–2023) using wastewater-based epidemiology (WBE). Wastewater samples were collected from 11 manholes on campus, each draining wastewater from a corresponding dormitory building, and viral RNA concentrations were measured using reverse transcription quantitative PCR (RT-qPCR). Weekly clinical case data were also obtained from the university health center. A strong positive and significant correlation was observed between Grab and Composite sampling methods, supporting their robustness as equally effective approaches for sample collection. Specifically, a strong correlation was observed between Aggie Village 4 Grab and Aggie Village 4 Composite samples (R² = 0.84, p = 0.00) and between Barbee Grab and Barbee Composite samples (R² = 0.80, p = 0.00). Additionally, higher viral RNA copies of SARS-CoV-2 (N1 gene) were detected during the Spring semester compared to the Fall and Summer semesters. Notably, elevations in raw N1 concentrations were observed shortly after the return of college students to campus, suggesting that these increases were predomi-nantly associated with students returning at the beginning of the Fall and Spring semesters (January and August). To account for variations in fecal loading, SARS-CoV-2 RNA concentrations were normalized using Pepper Mild Mottle Virus (PMMoV), a widely used viral fecal biomarker. However, normalization using PMMoV did not improve correlations between SARS-CoV-2 RNA levels and clinical case data. Despite these findings, our study did not establish WBE as a consistently reliable complement to clinical testing in a university campus setting, contrary to many retrospective studies. One key limitation was that numerous off-campus students did not contribute to the campus wastewater system corresponding to the monitored dormitories. However, some off-campus students were still subjected to clinical testing at the university health center under mandated pro-tocols. Moreover, the university health center discontinued reporting cases per dormitory after 2021, making direct comparisons more challenging. Nevertheless, this study highlights the continued value of WBE as a surveillance tool for monitoring infectious diseases and provides critical insights into its application in campus environments.
 

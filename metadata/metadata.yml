@@ -1,5 +1,6 @@
 metadata_version: 1
-name: SARS-CoV-2_wastewater_NCAT
+name: 'Wastewater Speaks: Evaluating SARS-CoV-2 Surveillance, Sampling Methods, and
+  Seasonal Infection Trends on a University Campus'
 description: |-
   This project represents the analysis of the waste water monitoring effort at NCAT. Monitoring focused on the SARS-CoV-2 virus during the years 2021 to 2023.
 
