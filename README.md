@@ -4,7 +4,7 @@ SARS-CoV-2 Epidemiology & Wastewater Surveillance at North Carolina Agricultural
 
 ## See outputs
 
-The scripts to create outputs and some input files are stored in the git repository itself.  The outputs they make, such as figures, are available as non-tracked attachements, see the releases page: [https://github.com/FodorLab/SARS-CoV-2_wastewater_NCAT/releases](https://github.com/FodorLab/SARS-CoV-2_wastewater_NCAT/releases). These can be downloaded to browse locally.
+The scripts to create outputs and some input files are stored in the git repository itself.  The outputs they make, such as figures, are available as non-tracked attachements, see the releases page: [https://github.com/FodorLab/SARS-CoV-2_wastewater_NCAT/releases](https://github.com/FodorLab/SARS-CoV-2_wastewater_NCAT/releases). These can be downloaded to browse locally.  Readers may also find outputs in the results folder of our Code Ocean capsule: doi:10.24433/CO.8844928.v1
 
 ## Project File Structure
 
@@ -12,7 +12,7 @@ This project is designed to be compatible with specific software: Code Ocean and
 
 ### Code Ocean
 
-This project is designed to work with [Code Ocean](https://codeocean.com/).
+This project is designed to work with [Code Ocean](https://codeocean.com/).  (See Code Ocean capsule doi:10.24433/CO.8844928.v1)
 
 See corresponding Code Ocean Capsule ["SARS-CoV-2_wastewater_NCAT"](https://codeocean.com/capsule/8844928/tree).
 
