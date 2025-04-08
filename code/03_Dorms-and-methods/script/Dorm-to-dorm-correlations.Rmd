@@ -122,7 +122,7 @@ ggplot(rna.wide.stringy,
     geom_point() +
     geom_text_repel(show.legend = F) +
     labs(caption = paste0("Spearmans rho: ", round(aV4test$estimate, 3), 
-                          "\n", "p-value: ", aV4test$p.value, "; -log10(p): ", -log10(aV4test$p.value),
+                          "\n", "p-value: ", aV4test$p.value, "; \u2212log10(p): ", -log10(aV4test$p.value),
                           "\n", "Gray line is unity (x=y).", 
                           "\n", "N=", aV4testN)) +
     theme_classic()
@@ -147,7 +147,7 @@ ggplot(rna.wide.stringy,
     geom_point() +
     geom_text_repel(show.legend = F) +
     labs(caption = paste0("Spearmans rho: ", round(barbeeTest$estimate, 3), 
-                          "\n", "p-value: ", barbeeTest$p.value, "; -log10(p): ", -log10(barbeeTest$p.value),
+                          "\n", "p-value: ", barbeeTest$p.value, "; \u2212log10(p): ", -log10(barbeeTest$p.value),
                           "\n", "Gray line is unity (x=y).",
                           "\n", "N=", barbeeTestN)) +
     theme_classic()
@@ -191,7 +191,7 @@ negLogPvals = -log10(corList.spearman$P)
 negLogPvals %>% tidyMelt(values="cor") %>% make_heatmap_1() +
     scale_fill_gradient2(low = "blue", high = "red", mid = "white",
                              midpoint = -log10(0.05), limit = c(0,max(negLogPvals)), space = "Lab",
-                             name="-log10(p)",
+                             name="\u2212log10(p)",
                              na.value = "gray30") +
     ggtitle("Spearman - p-values")
 ggsave("../output/dorm-ww-cor-matrix_p.png")

@@ -198,7 +198,7 @@ plotASvsGrab <- function(data, AScolumn, GrabColumn, name, subtitle="RNA copies 
         geom_point() +
         geom_text_repel(show.legend = F) +
         labs(caption = paste0("Spearmans rho: ", round(corTest$estimate, 3), 
-                              "\n", "p-value: ", corTest$p.value, "; -log10(p): ", -log10(corTest$p.value),
+                              "\n", "p-value: ", corTest$p.value, "; \u2212log10(p): ", -log10(corTest$p.value),
                               "\n", "Gray line is unity (x=y).", 
                               "\n", "N=", testN)) +
         theme_classic()
