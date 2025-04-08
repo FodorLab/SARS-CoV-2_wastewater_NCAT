@@ -175,6 +175,15 @@ rna.wide.stringy = rna.wide %>%
 ```
 
 ```{r}
+# this trick stolen from: 'Tom Constant's answer here: https://stackoverflow.com/questions/10762287/how-can-i-format-axis-labels-with-exponents-with-ggplot2-and-scales
+scientific_10 <- function(x) {
+    ret = x
+    if (any(x > 10 | x < 0.01, na.rm = T)){
+        ret = parse(text=gsub("e[+]*", " %*% 10^", scales::scientific_format()(x)))
+    }
+    return(ret)
+}
+
 plotASvsGrab <- function(data, AScolumn, GrabColumn, name, subtitle="RNA copies per liter",
                          imageFileName=paste0("../output/sampleMethod_", name, ".png")){
     fdata = data.frame(ASvalues=data[,AScolumn],
@@ -187,8 +196,8 @@ plotASvsGrab <- function(data, AScolumn, GrabColumn, name, subtitle="RNA copies 
     
     ggplot(fdata, 
            aes(x=GrabValues, y=ASvalues, label=dateString, col=year, pch=year)) +
-        scale_y_log10() +
-        scale_x_log10() +
+        scale_y_log10(label=scientific_10) +
+        scale_x_log10(label=scientific_10) +
         scale_color_manual(values=yearColors) +
         scale_shape_manual(values=yearPch) +
         xlab("Grab Sampling") +
@@ -202,7 +211,7 @@ plotASvsGrab <- function(data, AScolumn, GrabColumn, name, subtitle="RNA copies 
                               "\n", "Gray line is unity (x=y).", 
                               "\n", "N=", testN)) +
         theme_classic()
-    ggsave(imageFileName)
+    ggsave(imageFileName, width = 7, height = 7)
     return(list(corTest=corTest,
                 testN=testN,
                 plot=last_plot()))

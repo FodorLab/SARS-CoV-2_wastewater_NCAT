@@ -50,6 +50,11 @@ make_heatmap_1 <- function(cor.co2){
                                          size = 8, hjust = 1)) +
         coord_fixed()
 }
+
+# this trick stolen from: 'Tom Constant's answer here: https://stackoverflow.com/questions/10762287/how-can-i-format-axis-labels-with-exponents-with-ggplot2-and-scales
+scientific_10 <- function(x) {
+  parse(text=gsub("e[+]*", " %*% 10^", scales::scientific_format()(x)))
+}
 ```
 
 
@@ -182,8 +187,8 @@ ggplot(pmm %>% mutate(year=as.character(year(date))),
        aes(x=PMMoV.means, y=SARS.CoV.2.means, label=date, color=year, shape=year)) +
     scale_color_manual(values=yearColors) +
     scale_shape_manual(values=yearPch) +
-    scale_x_log10() + 
-    scale_y_log10() +
+    scale_x_log10(label=scientific_10) + 
+    scale_y_log10(label=scientific_10) +
     geom_point() +
     ggtitle("Wastewater RNA Concentration", sub="RNA Copies per Liter") + 
     xlab("PMMoV") +
@@ -208,11 +213,11 @@ ggsave("../output/PMMoV-vs-SAR_means.png", height = 4, width = 5)
 # ratioColor = "pink"
 
 ggplot(pmm, aes(x=date, y=SARS.CoV.2.means)) +
-    scale_y_log10() +
+    scale_y_log10(label=scientific_10) +
     geom_point(col=sarsColor) +
     theme_minimal()
 ggplot(pmm, aes(x=date, y=PMMoV.means)) +
-    scale_y_log10() +
+    scale_y_log10(label=scientific_10) +
     geom_point(col=pmmColor) +
     theme_minimal()
 ```
@@ -223,7 +228,7 @@ pmmLong = pmm %>% tidyr::gather(key=Virus, value=Concentration, SARS.CoV.2.means
 
 jointPlot = ggplot(pmmLong, aes(x=date, y=Concentration, col=Virus)) +
     theme_minimal() +
-    scale_y_log10() +
+    scale_y_log10(label=scientific_10) +
     geom_point() +
     geom_line() +
     scale_color_manual(values=c(SARS.CoV.2.means=sarsColor, PMMoV.means=pmmColor, logRatioS2P=ratioColor))
@@ -273,24 +278,24 @@ A little sanity check... does rep1 predict rep2 (and other pairings?).  It looks
 
 ```{r}
 ggplot(pmmD, aes(x=rep1, y=rep2)) +
-    scale_y_log10() +
-    scale_x_log10() +
+    scale_y_log10(label=scientific_10) +
+    scale_x_log10(label=scientific_10) +
     geom_abline(slope=1, col="gray") +
     geom_point()
 ggplot(pmmD, aes(x=rep3, y=rep2)) +
-    scale_y_log10() +
-    scale_x_log10() +
+    scale_y_log10(label=scientific_10) +
+    scale_x_log10(label=scientific_10) +
     geom_abline(slope=1, col="gray") +
     geom_point()
 ggplot(pmmD, aes(x=rep1, y=rep3)) +
-    scale_y_log10() +
-    scale_x_log10() +
+    scale_y_log10(label=scientific_10) +
+    scale_x_log10(label=scientific_10) +
     geom_abline(slope=1, col="gray") +
     geom_point()
 
 ggplot(pmmD, aes(x=mean, y=median)) +
-    scale_y_log10() +
-    scale_x_log10() +
+    scale_y_log10(label=scientific_10) +
+    scale_x_log10(label=scientific_10) +
     geom_abline(slope=1, col="gray") +
     geom_point()
 ```
@@ -381,8 +386,8 @@ pmm.merged = mutate(pmm.merged, year = as.character(year(date)))
 
 ggplot(pmm.merged, aes(x=PMMoV, y=SARS, 
                        color=year, pch=year)) +
-    scale_x_log10() +
-    scale_y_log10() +
+    scale_x_log10(label=scientific_10) +
+    scale_y_log10(label=scientific_10) +
     geom_point() +
     scale_color_manual(values=yearColors) +
     scale_shape_manual(values=yearPch) +
@@ -397,8 +402,8 @@ ggplot(pmm.merged, aes(x=PMMoV, y=SARS,
 ggsave("../output/PMMoV-vs-SARS_by-sample_withLegend.png", width = 6, height = 5)
 
 ggplot(pmm.merged, aes(x=PMMoV, y=SARS, color=as.character(date))) +
-    scale_x_log10() +
-    scale_y_log10() +
+    scale_x_log10(label=scientific_10) +
+    scale_y_log10(label=scientific_10) +
     geom_point() +
     ggtitle("All samples (AS and Grab)") + 
     theme_minimal() +
@@ -417,8 +422,8 @@ last_plot() + scale_colour_manual(values=c('2023-03-22'="blue",
 
 ggplot(pmm.merged %>% filter(dorm == "Aggie.V4.AS" | dorm == "Barbee.AS")
        , aes(x=PMMoV, y=SARS, color=dorm)) +
-    scale_x_log10() +
-    scale_y_log10() +
+    scale_x_log10(label=scientific_10) +
+    scale_y_log10(label=scientific_10) +
     geom_point() +
     ggtitle("only AS samples") +
     theme_minimal() 
@@ -427,15 +432,15 @@ ggplot(pmm.merged %>% filter(dorm == "Aggie.V4.AS" | dorm == "Barbee.AS")
 
 ggplot(pmm.merged %>% filter(dorm == "Aggie.V4.AS" | dorm == "Barbee.AS")
        , aes(x=date, y=PMMoV, color=dorm)) +
-    scale_y_log10() +
+    scale_y_log10(label=scientific_10) +
     geom_point() +
     ggtitle("only AS samples") +
     theme_minimal()
 
 ggplot(pmm.merged %>% filter(dorm != "Aggie.V4.AS" & dorm != "Barbee.AS")
        , aes(x=PMMoV, y=SARS, color=as.character(date))) +
-    scale_x_log10() +
-    scale_y_log10() +
+    scale_x_log10(label=scientific_10) +
+    scale_y_log10(label=scientific_10) +
     geom_point() +
     ggtitle("only \"grab\" samples") +
     theme_minimal() +
@@ -515,7 +520,7 @@ rna.wide = rna.wide %>% select(-Aggie.V4.AS, -Barbee.AS)
 
 ```{r}
 rcplot = ggplot(rna, aes(x=date, y=RNA.copies, col=dorm)) +
-    scale_y_log10() +
+    scale_y_log10(label=scientific_10) +
     ylab("RNA copies/L") +
     scale_color_manual(values=dormColors) +
     scale_fill_manual(values=termSeasonPalette) +
@@ -589,8 +594,8 @@ for (dorm.i in dorms){
     
     # plot
     lou.plot.list[[dorm.i]] <- ggplot(data=testData, aes(x=RNA.copies.Log10, y=prediction)) +
-        # scale_y_log10() +
-        # scale_x_log10() +
+        # scale_y_log10(label=scientific_10) +
+        # scale_x_log10(label=scientific_10) +
         scale_color_manual(values=dormColors) +
         geom_abline(slope=1, intercept = 0, alpha=.2) +
         geom_point() +
@@ -624,7 +629,7 @@ minDate = min(c(rna$date, classDates$classesStart, ccd.long$date))
 maxDate = ymd("2021-12-20", tz="") #max(c(rna$date, classDates$classesEnd, ccd.long$date))
 
 ccplot = ggplot(ccd.long, aes(x=date, y=clinical.cases, col=dorm)) +
-    # scale_y_log10() +
+    # scale_y_log10(label=scientific_10) +
     ylab("number clinical cases") +
     scale_color_manual(values=dormColors) +
     scale_fill_manual(values=termSeasonPalette) +
@@ -687,8 +692,8 @@ rna.cc.d = merge(rna.week, ccd.long %>% rename(week=date), by=c("dorm", "week"))
 ggplot(data=rna.week.summary %>% mutate(year = factor(year(week))), 
        aes(x=min, y=max, size=n, col=year)) + 
     geom_point(alpha=.4) +
-    scale_x_log10() +
-    scale_y_log10() +
+    scale_x_log10(label=scientific_10) +
+    scale_y_log10(label=scientific_10) +
     geom_point(data=rna.week.summary %>% filter(week=="2023-01-08"), 
                col="black", shape=1, size=5,
                aes(x=min, y=max)) +
@@ -721,7 +726,7 @@ for (pw in unique(peakWeeks$week)){
            aes(x=date, y=RNA.copies)) +
         geom_boxplot(outlier.shape = NA) +
         geom_jitter(height = 0, aes(color=dorm)) +
-        scale_y_log10() +
+        scale_y_log10(label=scientific_10) +
         ggtitle(unique(weeksTable$week))
     show(last_plot())
 }
@@ -739,7 +744,7 @@ ggplot(data=weeksTable,
        aes(x=date, y=RNA.copies)) +
     geom_boxplot(outlier.shape = NA) +
     geom_jitter(height = 0, aes(color=dorm)) +
-    scale_y_log10() 
+    scale_y_log10(label=scientific_10) 
 ```
 
 ```{r}
@@ -752,7 +757,7 @@ ggplot(data=weeksTable,
        aes(x=date, y=RNA.copies)) +
     geom_boxplot(outlier.shape = NA) +
     geom_jitter(height = 0, aes(color=dorm)) +
-    scale_y_log10() 
+    scale_y_log10(label=scientific_10) 
 
 weeksTable = rna %>% 
     mutate(week = round_date(date, unit="week")) %>% 
@@ -763,7 +768,7 @@ ggplot(data=weeksTable,
        aes(x=date, y=RNA.copies)) +
     geom_boxplot(outlier.shape = NA) +
     geom_jitter(height = 0, aes(color=dorm)) +
-    scale_y_log10() 
+    scale_y_log10(label=scientific_10) 
 ```
 
 
@@ -775,7 +780,7 @@ Scatter plots
 cc.vs.sars.cor.test = cor.test(x=rna.cc.d$RNA.copies, y=rna.cc.d$clinical.cases, method="spearman")
 
 scatPlot = ggplot(rna.cc.d, aes(x=RNA.copies, y=clinical.cases, color=dorm)) +
-    scale_x_log10() +
+    scale_x_log10(label=scientific_10) +
     xlab("RNA copies (max value in a given week)") +
     ylab("clinical cases (total over a given week)") +
     labs(title="SARS-CoV-2 2021", subtitle = "by week and dorm") +
@@ -806,7 +811,7 @@ rm(cc.vs.sars.cor.test)
 cc.vs.sars.cor.test = cor.test(x=rna.cc.d$RNA.copies, y=rna.cc.d$clinical.cases, method="spearman")
 
 scatPlot = ggplot(rna.cc.d, aes(x=RNA.copies, y=clinical.cases, color=dorm)) +
-    scale_x_log10() +
+    scale_x_log10(label=scientific_10) +
     xlab("RNA copies (mean value in a given week)") +
     ylab("clinical cases (total over a given week)") +
     labs(title="SARS-CoV-2 2021", subtitle = "by week and dorm") +
@@ -879,7 +884,7 @@ ggplot(data=rna.cc.d, aes(x=dorm, y=clinical.cases, color=dorm)) +
 ggplot(data=rna.cc.d, aes(x=dorm, y=RNA.copies, color=dorm)) +
     geom_boxplot() +
     scale_color_manual(values=dormColors) +
-    scale_y_log10()
+    scale_y_log10(label=scientific_10)
 ```
 
 
@@ -997,8 +1002,8 @@ anova(m.mixed)
 
 <!-- ```{r} -->
 <!-- stateVcampusLog = stateVcampus + -->
-<!--            scale_x_log10() +  -->
-<!--            scale_y_log10() + -->
+<!--            scale_x_log10(label=scientific_10) +  -->
+<!--            scale_y_log10(label=scientific_10) + -->
 <!--            labs(subtitle="log scale") -->
 
 <!-- stateVcampusLog -->
@@ -1034,29 +1039,29 @@ rna.long.month = rna.wide.month %>%
 
 ggplot(rna.long.month, aes(x=mean.RNA.copies, y=max.RNA.copies, size=n.RNA.copies.vals, color=year)) +
     geom_point(alpha=.5) +
-    scale_x_log10() +
-    scale_y_log10() +
+    scale_x_log10(label=scientific_10) +
+    scale_y_log10(label=scientific_10) +
     ggtitle("Summary metrics across dorms, across weeks within a month")
 ggplot(rna.long.month, aes(x=mean.RNA.copies, y=median.RNA.copies, size=n.RNA.copies.vals, color=year)) +
     geom_point(alpha=.5) +
-    scale_x_log10() +
-    scale_y_log10() +
+    scale_x_log10(label=scientific_10) +
+    scale_y_log10(label=scientific_10) +
     ggtitle("Summary metrics across dorms, across weeks within a month")
 ggplot(rna.long.month, aes(x=min.RNA.copies, y=median.RNA.copies, size=n.RNA.copies.vals, color=year)) +
     geom_point(alpha=.5) +
-    scale_x_log10() +
-    scale_y_log10() +
+    scale_x_log10(label=scientific_10) +
+    scale_y_log10(label=scientific_10) +
     ggtitle("Summary metrics across dorms, across weeks within a month")
 
 ggplot(rna.long.month, aes(x=mean.RNA.copies, y=meanLog.RNA.copies, size=n.RNA.copies.vals, color=year)) +
     geom_point(alpha=.5) +
-    scale_x_log10() +
-    scale_y_log10() +
+    scale_x_log10(label=scientific_10) +
+    scale_y_log10(label=scientific_10) +
     ggtitle("Summary metrics across dorms, across weeks within a month")
 ggplot(rna.long.month, aes(x=max.RNA.copies, y=meanLog.RNA.copies, size=n.RNA.copies.vals, color=year)) +
     geom_point(alpha=.5) +
-    scale_x_log10() +
-    scale_y_log10() +
+    scale_x_log10(label=scientific_10) +
+    scale_y_log10(label=scientific_10) +
     ggtitle("Summary metrics across dorms, across weeks within a month")
 
 ```
@@ -1076,7 +1081,7 @@ ggplot(data=campus.cc.rna, aes(x=mean.RNA.copies, y=clinical.cases, color=year, 
     geom_point() +
     scale_color_manual(values=yearColors) +
     scale_shape_manual(values=yearPch) +
-    scale_x_log10() +
+    scale_x_log10(label=scientific_10) +
     ggtitle("NCA&T campus wide values") +
     labs(caption=paste0("Spearmans rho: ", round(ct$estimate, 3),
                         "\nCor test p-value: ", round(ct$p.value, 3),
@@ -1089,7 +1094,7 @@ ggplot(data=campus.cc.rna, aes(x=median.RNA.copies, y=clinical.cases, color=year
     geom_point() +
     scale_color_manual(values=yearColors) +
     scale_shape_manual(values=yearPch) +
-    scale_x_log10() +
+    scale_x_log10(label=scientific_10) +
     ggtitle("NCA&T campus wide values") +
     labs(caption=paste0("Spearmans rho: ", round(ct$estimate, 3),
                         "\nCor test p-value: ", round(ct$p.value, 3),
@@ -1102,7 +1107,7 @@ ggplot(data=campus.cc.rna, aes(x=max.RNA.copies, y=clinical.cases, color=year, p
     geom_point() +
     scale_color_manual(values=yearColors) +
     scale_shape_manual(values=yearPch) +
-    scale_x_log10() +
+    scale_x_log10(label=scientific_10) +
     ggtitle("NCA&T campus wide values") +
     labs(caption=paste0("Spearmans rho: ", round(ct$estimate, 3),
                         "\nCor test p-value: ", round(ct$p.value, 3),
@@ -1116,7 +1121,7 @@ ggplot(data=campus.cc.rna, aes(x=meanLog.RNA.copies, y=clinical.cases, color=yea
     geom_point() +
     scale_color_manual(values=yearColors) +
     scale_shape_manual(values=yearPch) +
-    scale_x_log10() +
+    scale_x_log10(label=scientific_10) +
     ggtitle("NCA&T campus wide values") +
     labs(caption=paste0("Spearmans rho: ", round(ct$estimate, 3),
                         "\nCor test p-value: ", round(ct$p.value, 3),

@@ -61,6 +61,11 @@ gatherCorMatrix <- function(corMat){
         filter(!is.na(cor))
     return(corLong)
 }
+
+# this trick stolen from: 'Tom Constant's answer here: https://stackoverflow.com/questions/10762287/how-can-i-format-axis-labels-with-exponents-with-ggplot2-and-scales
+scientific_10 <- function(x) {
+  parse(text=gsub("e[+]*", " %*% 10^", scales::scientific_format()(x)))
+}
 ```
 
 Theme.
@@ -68,7 +73,7 @@ Set color constants for the year.
 ```{r}
 # based on ggplot defaults
 yearColors = c('2021'="#00BA38", '2022'="#F8766D", '2023'="#619CFF")
-yearPch = c('2021'=1, '2022'=2, '2023'=3)
+yearPch = c('2021'=15, '2022'=16, '2023'=17)
 ```
 
 Output
@@ -111,8 +116,8 @@ aV4testN = sum(!is.na(rna.wide$Aggie.V4) & !is.na(rna.wide$Aggie.V4.AS))
 
 ggplot(rna.wide.stringy, 
        aes(x=Aggie.V4, y=Aggie.V4.AS, label=dateString, col=year, pch=year)) +
-    scale_y_log10() +
-    scale_x_log10() +
+    scale_y_log10(label=scientific_10) +
+    scale_x_log10(label=scientific_10) +
     scale_color_manual(values=yearColors) +
     scale_shape_manual(values=yearPch) +
     xlab("Grab Sampling") +
@@ -136,8 +141,8 @@ barbeeTestN = sum(!is.na(rna.wide$Barbee) & !is.na(rna.wide$Barbee.AS))
 
 ggplot(rna.wide.stringy, 
        aes(x=Barbee, y=Barbee.AS, label=dateString, col=year, pch=year)) +
-    scale_y_log10() +
-    scale_x_log10() +
+    scale_y_log10(label=scientific_10) +
+    scale_x_log10(label=scientific_10) +
     scale_color_manual(values=yearColors) +
     scale_shape_manual(values=yearPch) +
     xlab("Grab Sampling") +
